@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'cliente',
     'django_bootstrap5',
     'django_bootstrap_icons',
+    
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,20 @@
+{% extends 'cliente/estructura/base.html' %}
+
+{% block content %}
+    <h1>Lista de Equipos</h1>
+    <ul>
+        {% for equipo in equipos_mostrar %}
+            <li>
+                <strong>{{ equipo.nombre }}</strong>
+                <br>
+                <img src="{{ equipo.logotipo }}" alt="Logotipo de {{ equipo.nombre }}" style="width: 100px; height: auto;">
+                <br>
+                Puntos Contribuidos: {{ equipo.puntos_contribuidos }}
+                <br>
+                Fecha de Ingreso: {{ equipo.fecha_ingreso }}
+            </li>
+        {% empty %}
+            <li>No hay equipos disponibles.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

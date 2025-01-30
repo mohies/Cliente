@@ -1,0 +1,31 @@
+{% extends 'cliente/estructura/base.html' %}
+
+{% block content %}
+    <h1>Lista de Participantes</h1>
+    <ul>
+        {% for participante in participantes_mostrar %}
+            <li>
+                <strong>{{ participante.usuario.nombre }}</strong>  <!-- Acceso al nombre del usuario -->
+                <br>
+                Username: {{ participante.nombre_usuario }}  <!-- Acceso al correo (puedes mostrar el correo como username si lo deseas) -->
+                <br>
+                Puntos: {{ participante.puntos_obtenidos }}  <!-- Acceso a los puntos obtenidos del participante -->
+                <br>
+                Fecha de Registro: {{ participante.fecha_inscripcion }}  <!-- Fecha de inscripción del participante -->
+                <br>
+                Ranking: {{ participante.posicion_final }}  <!-- Acceso al ranking desde el perfil de jugador -->
+                <br>
+                Tiempo Jugado : {{ participante.tiempo_jugado }}
+                <br>
+                Equipos: 
+                {% for equipo in participante.equipos %}
+                    <span>{{ equipo.nombre }}</span>  <!-- Mostrar nombre de los equipos asociados -->
+                {% empty %}
+                    <span>No asignado a ningún equipo</span>
+                {% endfor %}
+            </li>
+        {% empty %}
+            <li>No hay participantes disponibles.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

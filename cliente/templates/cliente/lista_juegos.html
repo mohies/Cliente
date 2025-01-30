@@ -1,0 +1,27 @@
+{% extends 'cliente/estructura/base.html' %}
+
+{% block content %}
+    <h1>Lista de Juegos</h1>
+    <ul>
+        {% for juego in juegos_mostrar %}
+            <li>
+                <strong>{{ juego.nombre }}</strong>
+                <br>
+                Género: {{ juego.genero }}
+                <br>
+                Plataforma: {{ juego.consola }}
+                <br>
+                Descripción: {{ juego.descripcion }}
+                <br>
+                Torneo(s): 
+                {% for torneo in juego.torneos %}
+                    <span>{{ torneo.nombre }}</span>
+                {% empty %}
+                    <span>No asignado a ningún torneo</span>
+                {% endfor %}
+            </li>
+        {% empty %}
+            <li>No hay juegos disponibles.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

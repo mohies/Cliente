@@ -18,7 +18,7 @@
                 <ul>
                     {% for torneo_participante in torneo.participantes %}
                         <li>
-                            {{ torneo_participante.participante.usuario.nombre }} 
+                            - Nombre: {{ torneo_participante.usuario.nombre }} 
                             - Puntos obtenidos: {{ torneo_participante.puntos_obtenidos }}
                             - Posición final: {{ torneo_participante.posicion_final }}
                         </li>
