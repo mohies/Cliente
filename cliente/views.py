@@ -15,7 +15,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 USER_KEY_ADMINISTRADOR = env("USER_KEY_ADMINISTRADOR")
 USER_KEY_JUGADOR = env("USER_KEY_JUGADOR")
 USER_KEY_ORGANIZADOR = env("USER_KEY_ORGANIZADOR")
-
+print(USER_KEY_ADMINISTRADOR)
 # Create your views here.
 def index(request):
     return render(request, 'index.html')
