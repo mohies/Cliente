@@ -15,7 +15,9 @@
                 <br>
                 Torneo(s): 
                 {% for torneo in juego.torneos %}
-                    <span>{{ torneo.nombre }}</span>
+                    Nombre torneo: <span>{{ torneo.nombre }}</span>
+                    <br>
+                    Descripcion torneo :<span>{{torneo.descripcion}}</span>
                 {% empty %}
                     <span>No asignado a ningún torneo</span>
                 {% endfor %}
