@@ -1,3 +1,4 @@
+<!-- filepath: /c:/Users/mohce/OneDrive/Escritorio/Cliente/cliente/templates/cliente/estructura/menu.html -->
 {% load static %}
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
@@ -11,5 +12,27 @@
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'index' %}">Inicio</a>
             </li>
+            <!-- Enlace a Búsqueda SINV -->
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'torneo_buscar_avanzado_sin_validaciones' %}">Busqueda SINV</a>
+            </li>
+            <!-- Menú desplegable para Búsquedas Avanzadas -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Búsquedas Avanzadas
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="{% url 'equipo_busqueda_avanzada' %}">Equipos</a></li>
+                    <li><a class="dropdown-item" href="{% url 'participante_busqueda_avanzada' %}">Participantes</a></li>
+                    <li><a class="dropdown-item" href="{% url 'juego_busqueda_avanzada' %}">Juegos</a></li>
+                </ul>
+            </li>
+        </ul>
+        <!-- Formulario de búsqueda -->
+        <form class="d-flex ms-auto" method="GET" action="{% url 'torneo_busqueda_simple' %}">
+            {% csrf_token %}
+            <input class="form-control me-2" type="search" placeholder="Buscar torneos" name="textoBusqueda" aria-label="Buscar torneos">
+            <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
     </div>
 </nav>

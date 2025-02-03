@@ -1,0 +1,36 @@
+<!-- filepath: /c:/Users/mohce/OneDrive/Escritorio/Cliente/cliente/templates/cliente/busqueda_avanzada_equipo.html -->
+{% extends "cliente/estructura/base.html" %}
+{% load django_bootstrap5 %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Búsqueda Avanzada de Equipos</h2>
+    <form class="row g-3" method="GET" action="{% url 'equipo_busqueda_avanzada' %}">
+        {% csrf_token %}
+
+        <!-- Campo de nombre -->
+        <div class="col-md-6">
+            {% bootstrap_field formulario.nombre show_label=True %}
+        </div> 
+
+        <!-- Campo de fecha ingreso desde -->
+        <div class="col-md-3">
+            {% bootstrap_field formulario.fecha_ingreso_desde show_label=True %}
+        </div>
+
+        <!-- Campo de fecha ingreso hasta -->
+        <div class="col-md-3">
+            {% bootstrap_field formulario.fecha_ingreso_hasta show_label=True %}
+        </div>
+
+        <!-- Campo de puntos contribuidos mínimos -->
+        <div class="col-md-6">
+            {% bootstrap_field formulario.puntos_contribuidos_min show_label=True %}
+        </div>
+
+        <!-- Botón de búsqueda -->
+        <div class="col-md-12 text-center">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

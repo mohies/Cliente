@@ -1,0 +1,30 @@
+{% extends "cliente/estructura/base.html" %}
+
+{% block content %}
+{% load django_bootstrap5 %}
+
+    <form action="{% url 'torneo_buscar_avanzado_sin_validaciones' %}" method="GET"> 
+        {% csrf_token %}
+
+        <!-- Campo de texto para búsqueda -->
+        <div class="mb-4">
+            {% bootstrap_field formulario.textoBusqueda show_label=True %}
+        </div> 
+        
+        <!-- Campo de fecha desde -->
+        <div class="mb-4">
+            {% bootstrap_field formulario.fecha_desde show_label=True %}
+        </div>
+
+        <!-- Campo de fecha hasta -->
+        <div class="mb-4">
+            {% bootstrap_field formulario.fecha_hasta show_label=True %}
+        </div>
+
+        <!-- Botón de búsqueda -->
+        <div class="text-center">
+            {% bootstrap_button "Buscar Torneos" button_type="submit" button_class="btn-primary" %}
+        </div>
+    </form> 
+
+{% endblock %}
