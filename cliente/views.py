@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 import xml.etree.ElementTree as ET
-
+from requests.exceptions import HTTPError
 # Inicializa environ.Env
 env = environ.Env()
 
@@ -26,13 +26,13 @@ print(USER_KEY_ADMINISTRADOR)
 
 def crear_cabecera():
     return {
-        'Authorization': 'Bearer rYAaupTkN4FCfHZ4qS7tYXOrscolMZ'
+        'Authorization': 'Bearer GR6xmtw8F3fvVqPPhj1akmhu59K0rW'
         }
 
 # Definimos por defecto la version que tenemos de la API y las establecemos en nuestras aplicaciones
 API_VERSION = env("API_VERSION", default="v1") 
-API_BASE_URL = f'http://127.0.0.1:8000/api/{API_VERSION}/'
-print(API_BASE_URL)
+API_BASE_URL = f'https://mohbenbou.pythonanywhere.com/api/{API_VERSION}/'
+
 
 def index(request):
     return render(request, 'index.html')
@@ -90,10 +90,6 @@ def juegos_lista_api(request):
     return render(request, 'cliente/lista_juegos.html', {"juegos_mostrar": juegos})
 
 
-
-
-
-
 def equipos_lista_api(request):
     # El token que te han dado
     access_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM4MTk4Nzc3LCJpYXQiOjE3MzgxOTg0NzcsImp0aSI6ImNmM2ZiMjcwOWYxNDRiNTg4NjAwYTcxYjA0NWZmZWQ3IiwidXNlcl9pZCI6Mn0.-gGn8ViwXz6rhXkchXiJJ4j3mqFNwJwMvJyvqhUIqpY'
@@ -114,7 +110,7 @@ def torneo_busqueda_simple(request):
     if formulario.is_valid():
         headers = crear_cabecera() 
         response = requests.get(
-            f'{API_BASE_URL}torneos/buscar',
+            f'{API_BASE_URL}torneos/buscar/',
             headers=headers,
             params={'textoBusqueda': formulario.data.get("textoBusqueda")}
         )
@@ -138,7 +134,7 @@ def torneo_busqueda_avanzada(request):
             'fecha_hasta': request.GET.get('fecha_hasta', None),
         }
         response = requests.get(
-            f'{API_BASE_URL}torneos/buscar/avanzado',
+            f'{API_BASE_URL}torneos/buscar/avanzado/',
             headers=headers,
             params=params
         )
@@ -156,7 +152,7 @@ def equipo_busqueda_avanzada(request):
             try:
                 headers = crear_cabecera()
                 response = requests.get(
-                    f'{API_BASE_URL}equipos/buscar/avanzado',
+                    f'{API_BASE_URL}equipos/buscar/avanzado/',
                     headers=headers,
                     params=formulario.cleaned_data
                 )
@@ -176,7 +172,7 @@ def equipo_busqueda_avanzada(request):
                     return tratar_errores(request, response.status_code)
             except Exception as err:
                 print(f'Ocurrió un error: {err}')
-                return tratar_errores(request, 500)
+                return mi_error_500(request)
         else:
             return render(request, 'cliente/busqueda_avanzada_equipo.html', {"formulario": formulario})
     else:
@@ -190,7 +186,7 @@ def participante_busqueda_avanzada(request):
         try:
             headers = crear_cabecera()
             response = requests.get(
-                f'{API_BASE_URL}participantes/buscar/avanzado',
+                f'{API_BASE_URL}participantes/buscar/avanzado/',
                 headers=headers,
                 params=formulario.data
             )
@@ -211,7 +207,7 @@ def participante_busqueda_avanzada(request):
                 return tratar_errores(request, response.status_code)
         except Exception as err:
             print(f'Ocurrió un error: {err}')
-            return tratar_errores(request, 500)
+            return mi_error_500(request)
     else:
         formulario = BusquedaAvanzadaParticipanteForm(None)
     return render(request, 'cliente/busqueda_avanzada_participante.html', {"formulario": formulario})
@@ -223,7 +219,7 @@ def juego_busqueda_avanzada(request):
         try:
             headers = crear_cabecera()
             response = requests.get(
-                f'{API_BASE_URL}juegos/buscar/avanzado',
+                f'{API_BASE_URL}juegos/buscar/avanzado/',
                 headers=headers,
                 params=formulario.data
             )
@@ -244,7 +240,7 @@ def juego_busqueda_avanzada(request):
                 return tratar_errores(request, response.status_code)
         except Exception as err:
             print(f'Ocurrió un error: {err}')
-            return tratar_errores(request, 500)
+            return mi_error_500(request)
     else:
         formulario = BusquedaAvanzadaJuegoForm(None)
     return render(request, 'cliente/busqueda_avanzada_juego.html', {"formulario": formulario})
