@@ -7,11 +7,11 @@
             <li>
                 <strong>{{ juego.nombre }}</strong>
                 <br>
-                Género: {{ juego.genero }}
-                <br>
-                Plataforma: {{ juego.consola }}
+                Género: {{ juego.genero }} 
                 <br>
                 Descripción: {{ juego.descripcion }}
+                <br>
+                Consola: {{ juego.consola }}  <!-- Mostrar el nombre de la consola -->
                 <br>
                 Torneo(s): 
                 {% for torneo in juego.torneos %}
