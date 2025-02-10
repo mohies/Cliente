@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from .forms import *
 import requests
 import environ
@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework import status
 import xml.etree.ElementTree as ET
 from requests.exceptions import HTTPError
+import json
+
 # Inicializa environ.Env
 env = environ.Env()
 
@@ -23,16 +25,14 @@ USER_KEY_ORGANIZADOR = env("USER_KEY_ORGANIZADOR")
 print(USER_KEY_ADMINISTRADOR)
 # Create your views here.
 
-
 def crear_cabecera():
     return {
-        'Authorization': 'Bearer GR6xmtw8F3fvVqPPhj1akmhu59K0rW'
+        'Authorization': 'Bearer KVmOJFR8XecCfMWdS0StpwVmRSb4Yt'
         }
 
 # Definimos por defecto la version que tenemos de la API y las establecemos en nuestras aplicaciones
 API_VERSION = env("API_VERSION", default="v1") 
-API_BASE_URL = f'https://mohbenbou.pythonanywhere.com/api/{API_VERSION}/'
-
+API_BASE_URL = f'http://127.0.0.1:8000/api/{API_VERSION}/'
 
 def index(request):
     return render(request, 'index.html')
@@ -52,7 +52,6 @@ def process_response(response):
     else:
         raise ValueError('Unsupported content type: {}'.format(response.headers['Content-Type']))
 
-
 def torneos_lista_api(request):
     # Obtenemos todos los torneos desde la API
     headers = {'Authorization': f'Bearer {USER_KEY_ADMINISTRADOR}'}
@@ -63,7 +62,6 @@ def torneos_lista_api(request):
     
     # Renderizamos los datos en la plantilla HTML
     return render(request, 'cliente/lista_api.html', {"torneos_mostrar": torneos})
-
 
 def participantes_lista_api(request):
     # Obtenemos todos los participantes desde la API
@@ -76,8 +74,6 @@ def participantes_lista_api(request):
     # Renderizamos los datos en la plantilla HTML
     return render(request, 'cliente/lista_participantes.html', {"participantes_mostrar": participantes})
 
-
-
 def juegos_lista_api(request):
     # Obtenemos todos los juegos desde la API
     headers = {'Authorization': f'Bearer {USER_KEY_ORGANIZADOR}'}
@@ -88,7 +84,6 @@ def juegos_lista_api(request):
     
     # Renderizamos los datos en la plantilla HTML
     return render(request, 'cliente/lista_juegos.html', {"juegos_mostrar": juegos})
-
 
 def equipos_lista_api(request):
     # El token que te han dado
@@ -102,7 +97,6 @@ def equipos_lista_api(request):
     if response.status_code == 200:
         equipos = process_response(response)
         return render(request, 'cliente/lista_equipos.html', {"equipos_mostrar": equipos})
-
 
 def torneo_busqueda_simple(request):
     formulario = BusquedaTorneoForm(request.GET)
@@ -122,9 +116,8 @@ def torneo_busqueda_simple(request):
     else:
         return redirect("index")
     
-    
 def torneo_busqueda_avanzada(request):
-    formulario = BusquedaAvanzadaTorneoForm(request.GET or None)
+    formulario = BusquedaAvanzadaTorneoForm(request.GET)
     
     if request.GET:  # Verifica si hay datos en la solicitud GET. Esto significa que el formulario ha sido enviado con datos.
         headers = crear_cabecera()
@@ -142,7 +135,6 @@ def torneo_busqueda_avanzada(request):
         return render(request, 'cliente/lista_api.html', {"torneos_mostrar": torneos})
     
     return render(request, 'cliente/busqueda_avanzada.html', {"formulario": formulario})
-
 
 @api_view(['GET'])
 def equipo_busqueda_avanzada(request):
@@ -245,7 +237,54 @@ def juego_busqueda_avanzada(request):
         formulario = BusquedaAvanzadaJuegoForm(None)
     return render(request, 'cliente/busqueda_avanzada_juego.html', {"formulario": formulario})
 
+def crear_torneo(request):
+    if request.method == 'POST':
+        try:
+            formulario = TorneoForm(request.POST)
+            headers = {
+                'Authorization': f'Bearer {USER_KEY_ADMINISTRADOR}',
+                'Content-Type': 'application/json'
+            }
+            datos = formulario.data.copy()
+            datos["participantes"] = request.POST.getlist("participantes")
+            datos["categorias"] = request.POST.getlist("categorias")
+            datos["fecha_inicio"] = str(
+                datetime.date(year=int(datos['fecha_inicio_year']),
+                              month=int(datos['fecha_inicio_month']),
+                              day=int(datos['fecha_inicio_day']))
+            )
+            
+            response = requests.post(
+                f'{API_BASE_URL}torneos/crear/',
+                headers=headers,
+                data=json.dumps(datos)
+            )
+            
+            if response.status_code == requests.codes.ok:
+                return redirect("index")
+            else:
+                print(response.status_code)
+                response.raise_for_status()
 
+        except HTTPError as http_err:
+            print(f'Hubo un error en la petición: {http_err}')
+            if response.status_code == 400:
+                errores = response.json()
+                for campo, mensaje in errores.items():
+                    formulario.add_error(campo, mensaje)  # Agregar errores específicos al formulario
+                return render(request, 'cliente/create/crear_torneo.html', {"formulario": formulario})
+            else:
+                return mi_error_500(request)
+
+        except Exception as err:
+            print(f'Ocurrió un error: {err}')
+            formulario.add_error(None, f"Ocurrió un error inesperado: {err}")  # Mensaje de error global
+            return render(request, 'cliente/create/crear_torneo.html', {"formulario": formulario})
+
+    else:
+        formulario = TorneoForm(None)
+    
+    return render(request, 'cliente/create/crear_torneo.html', {"formulario": formulario})
 
 
 def tratar_errores(request,codigo):
@@ -254,8 +293,6 @@ def tratar_errores(request,codigo):
     else:
         return mi_error_500(request)
         
-
-
 #Páginas de Error
 def mi_error_404(request,exception=None):
     return render(request, 'cliente/errores/404.html',None,None,404)
