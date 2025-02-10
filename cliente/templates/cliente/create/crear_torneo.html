@@ -1,8 +1,7 @@
-{% extends 'torneo/estructura/base.html' %}
+{% extends 'cliente/estructura/base.html' %}
 
 {% block content %}
-{% if user.is_authenticated %}
-    <form action="{% url 'torneo_crear' %}" method="post"> 
+    <form action="{% url 'crear_torneo' %}" method="post"> 
         {% load django_bootstrap5 %}
         {% csrf_token %} 
         <div class="mb-4">
@@ -12,9 +11,4 @@
             <button type="submit" class="btn btn-primary">Enviar</button>
         </div>
     </form>
-{% else %}
-    <div class="alert alert-warning" role="alert">
-        Debes iniciar sesión para acceder a esta página.
-    </div>
-{% endif %}
 {% endblock %}

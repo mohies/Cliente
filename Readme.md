@@ -12,3 +12,10 @@
 3. **¿Siempre debemos tratar todos los errores en cada una de las peticiones?**
 
    No, no siempre es necesario tratar todos los errores en cada petición. Sin embargo, es una buena práctica manejar los errores comunes y tener una función general para tratar errores específicos. En el código, hemos implementado funciones como `tratar_errores`, `mi_error_404`, y `mi_error_500` para manejar errores de manera centralizada.
+
+
+
+Invoke-WebRequest -Uri "https://mohbenbou.pythonanywhere.com/oauth2/token/" `
+                  -Method POST `
+                  -Body "grant_type=password&username=admin&password=admin&client_id=pepeid&client_secret=pepesecreto" `
+                  -ContentType "application/x-www-form-urlencoded"
