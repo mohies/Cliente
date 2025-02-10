@@ -13,4 +13,6 @@ urlpatterns = [
     path('participante/busqueda/avanzada/', views.participante_busqueda_avanzada, name='participante_busqueda_avanzada'),
     path('juego/busqueda/avanzada/', views.juego_busqueda_avanzada, name='juego_busqueda_avanzada'),
     path('crear-torneo/', views.crear_torneo, name='crear_torneo'),
+    path('editar-torneo/<int:torneo_id>/', views.editar_torneo, name='editar_torneo'),
+
 ]

@@ -287,6 +287,63 @@ def crear_torneo(request):
     return render(request, 'cliente/create/crear_torneo.html', {"formulario": formulario})
 
 
+
+def editar_torneo(request, torneo_id):
+    """
+    Vista para editar un torneo siguiendo el formato exacto del profesor.
+    """
+    helper = Helper()  # Instancia de Helper
+
+    # Obtener los datos del torneo desde la API
+    torneo = helper.obtener_torneo(torneo_id)
+
+    if request.method == "POST":
+        formulario = TorneoForm(request.POST)
+
+        if formulario.is_valid():
+            datos = request.POST.copy()
+            datos["participantes"] = request.POST.getlist("participantes")
+            datos["categoria"] = request.POST.get("categoria")
+            datos["fecha_inicio"] = str(datetime.date(
+                year=int(datos['fecha_inicio_year']),
+                month=int(datos['fecha_inicio_month']),
+                day=int(datos['fecha_inicio_day'])
+            ))
+
+            response = requests.put(
+                f'{API_BASE_URL}torneos/editar/{torneo_id}/',
+                headers={
+                    'Authorization': f'Bearer {USER_KEY_ADMINISTRADOR}',
+                    'Content-Type': 'application/json'
+                },
+                data=json.dumps(datos)
+            )
+
+            if response.status_code == 200:
+                return redirect("torneo_mostrar", torneo_id=torneo_id)
+            else:
+                if response.status_code == 400:
+                    errores = response.json()
+                    for campo, mensaje in errores.items():
+                        formulario.add_error(campo, mensaje)
+                else:
+                    return tratar_errores(request, response.status_code)
+    else:
+        #Rellenamos el formulario solo si es una petición GET
+        formulario = TorneoForm(
+            initial={
+                'nombre': torneo['nombre'],
+                'descripcion': torneo["descripcion"],
+                'fecha_inicio': datetime.datetime.strptime(torneo['fecha_inicio'], '%d-%m-%Y').date(),
+                'categoria': torneo['categoria'],
+                'duracion': torneo['duracion'],
+                'participantes': [str(participante['id']) for participante in torneo['participantes']]
+            }
+        )
+
+    return render(request, 'cliente/create/editar_torneo.html', {"formulario": formulario, "torneo": torneo})
+
+
 def tratar_errores(request,codigo):
     if codigo == 404:
         return mi_error_404(request)
