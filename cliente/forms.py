@@ -115,7 +115,7 @@ class TorneoForm(forms.Form):
         
         # Obtener las categorías disponibles desde la API
         categoriasDisponibles = helper.obtener_categorias_select()
-        self.fields["categoria"] = forms.ChoiceField(  # 🔹 Cambiado de MultipleChoiceField a ChoiceField
+        self.fields["categoria"] = forms.ChoiceField(  # Cambiado de MultipleChoiceField a ChoiceField
             choices=categoriasDisponibles,
             required=True,
             help_text="Selecciona una categoría"
