@@ -4,7 +4,7 @@ import os
 
 def crear_cabecera():
     return {
-        'Authorization': 'Bearer kCaflRfD4YsKdaNkhQzM4ZBnfggXX3',
+        'Authorization': 'Bearer Nz0FVzhXHFReAXVnGHgLcaX6c9Jk2k',
         'Content-Type': 'application/json'
     }
 
@@ -44,3 +44,31 @@ class Helper:
             return response.json()
         else:
             raise Exception(f"Error al obtener el torneo {torneo_id}: {response.status_code}")
+        
+        
+    def obtener_torneos_select(self):
+        headers = crear_cabecera()
+        response = requests.get(f'{API_BASE_URL}torneos/', headers=headers)
+        torneos = response.json()
+        return [(torneo['id'], torneo['nombre']) for torneo in torneos]
+
+    def obtener_consolas_select(self):
+        headers = crear_cabecera()
+        response = requests.get(f'{API_BASE_URL}consolas/', headers=headers)
+        consolas = response.json()
+        return [(consola['id'], consola['nombre']) for consola in consolas]
+    
+    
+    
+    def obtener_juego(self, juego_id):
+        """
+        Obtiene los datos de un juego específico desde la API.
+        """
+        headers = crear_cabecera()  # Usa la misma estructura de las otras funciones
+        response = requests.get(f'{API_BASE_URL}juegos/{juego_id}/', headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise Exception(f"Error al obtener el juego {juego_id}: {response.status_code}")
+
