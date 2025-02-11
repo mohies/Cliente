@@ -12,6 +12,7 @@
                 </div>
                 <div class="card-body">
                     <p class="card-text"><strong>Descripción:</strong> {{ torneo.descripcion }}</p>
+
                     <h6 class="mt-3">Participantes:</h6>
                     {% if torneo.participantes %}
                         <ul class="list-group">
@@ -26,6 +27,7 @@
                     {% else %}
                         <p>No hay participantes registrados.</p>
                     {% endif %}
+
                     <h6 class="mt-3">Juegos Asociados:</h6>
                     {% if torneo.juegos %}
                         <ul class="list-group">
@@ -40,6 +42,25 @@
                     {% else %}
                         <p>No hay juegos asociados a este torneo.</p>
                     {% endif %}
+
+                    <!-- 🔹 BOTONES PARA EDITAR Y ELIMINAR -->
+                    <div class="mt-4 d-flex justify-content-end">
+                        <!-- Botón para Editar Nombre -->
+                        <a href="{% url 'torneo_editar_nombre' torneo.id %}" class="btn btn-warning me-2">
+                            Editar Nombre
+                        </a>
+
+                        <!-- Botón para Editar Torneo Completo -->
+                        <a href="{% url 'editar_torneo' torneo.id %}" class="btn btn-primary me-2">
+                            Editar Torneo
+                        </a>
+
+                        <!-- Botón para Eliminar Torneo -->
+                        <a href="{% url 'torneo_eliminar' torneo.id %}" class="btn btn-danger"
+                           onclick="return confirm('¿Estás seguro de que quieres eliminar este torneo?');">
+                            Eliminar
+                        </a>
+                    </div>
                 </div>
             </div>
         {% endfor %}

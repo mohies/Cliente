@@ -18,13 +18,23 @@
             </li>
             <!-- Menú desplegable para Búsquedas Avanzadas -->
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownBusqueda" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Búsquedas Avanzadas
                 </a>
-                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownBusqueda">
                     <li><a class="dropdown-item" href="{% url 'equipo_busqueda_avanzada' %}">Equipos</a></li>
                     <li><a class="dropdown-item" href="{% url 'participante_busqueda_avanzada' %}">Participantes</a></li>
                     <li><a class="dropdown-item" href="{% url 'juego_busqueda_avanzada' %}">Juegos</a></li>
+                </ul>
+            </li>
+            <!-- Menú desplegable para Torneos -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTorneos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Torneos
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownTorneos">
+                    <li><a class="dropdown-item" href="{% url 'listar_torneos' %}">Listar Torneos</a></li>
+                    <li><a class="dropdown-item" href="{% url 'crear_torneo' %}">Crear Torneo</a></li>
                 </ul>
             </li>
         </ul>

@@ -120,6 +120,14 @@ class TorneoForm(forms.Form):
             required=True,
             help_text="Selecciona una categoría"
         )
+        
+class TorneoActualizarNombreForm(forms.Form):
+    nombre = forms.CharField(
+        label="Nuevo Nombre del Torneo",
+        required=True,
+        max_length=200,
+        help_text="200 caracteres como máximo"
+    )
 
 
 
