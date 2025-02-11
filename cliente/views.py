@@ -27,7 +27,7 @@ print(USER_KEY_ADMINISTRADOR)
 
 def crear_cabecera():
     return {
-        'Authorization': 'Bearer kCaflRfD4YsKdaNkhQzM4ZBnfggXX3',
+        'Authorization': 'Bearer Nz0FVzhXHFReAXVnGHgLcaX6c9Jk2k',
         "Content-Type": "application/json"
         }
 
@@ -400,11 +400,8 @@ def torneo_editar_nombre(request, torneo_id):
 
 
 def torneo_eliminar(request, torneo_id):
-    """
-    Vista para eliminar un torneo siguiendo el formato exacto del profesor.
-    """
     try:
-        headers = crear_cabecera()  # ✅ Usa la misma función que el profesor
+        headers = crear_cabecera()  
 
         response = requests.delete(
             f'{API_BASE_URL}torneos/eliminar/{torneo_id}/',
@@ -412,7 +409,7 @@ def torneo_eliminar(request, torneo_id):
         )
 
         if response.status_code == requests.codes.ok:
-            return redirect("listar_torneos")  # ✅ Redirige a la lista de torneos después de eliminar
+            return redirect("listar_torneos")  #  Redirige a la lista de torneos después de eliminar
         else:
             print(response.status_code)
             response.raise_for_status()
@@ -421,7 +418,116 @@ def torneo_eliminar(request, torneo_id):
         print(f'Ocurrió un error: {err}')
         return mi_error_500(request)
 
-    return redirect("listar_torneos")  # ✅ Redirige de todas formas
+    return redirect("listar_torneos")  #  Redirige de todas formas
+
+
+
+def crear_juego(request):
+
+    if request.method == 'POST':
+        try:
+            formulario = JuegoForm(request.POST)
+            headers = {
+                'Authorization': f'Bearer {USER_KEY_ADMINISTRADOR}',
+                'Content-Type': 'application/json'
+            }
+            
+            if formulario.is_valid():
+                datos = formulario.cleaned_data.copy()
+                datos["torneos"] = request.POST.getlist("torneos")  # ManyToMany con Torneo
+
+                response = requests.post(
+                    f'{API_BASE_URL}juegos/crear/',
+                    headers=headers,
+                    data=json.dumps(datos)
+                )
+
+                if response.status_code == requests.codes.ok:
+                    return redirect("juegos_lista")  # ✅ Redirige después de crear
+                else:
+                    print(response.status_code)
+                    response.raise_for_status()
+
+        except HTTPError as http_err:
+            print(f'Hubo un error en la petición: {http_err}')
+            if response.status_code == 400:
+                errores = response.json()
+                for campo, mensaje in errores.items():
+                    formulario.add_error(campo, mensaje)  # Agrega errores específicos
+                return render(request, 'cliente/create/crear_juego.html', {"formulario": formulario})
+            else:
+                return mi_error_500(request)
+
+        except Exception as err:
+            print(f'Ocurrió un error: {err}')
+            formulario.add_error(None, f"Ocurrió un error inesperado: {err}")  # Mensaje de error global
+            return render(request, 'cliente/create/crear_juego.html', {"formulario": formulario})
+
+    else:
+        formulario = JuegoForm(None)
+
+    return render(request, 'cliente/create/crear_juego.html', {"formulario": formulario})
+
+
+
+
+def editar_juego(request, juego_id):
+    """
+    Vista para editar un juego siguiendo el formato exacto del profesor.
+    """
+    datosFormulario = None
+    
+    if request.method == "POST":
+        datosFormulario = request.POST
+
+    helper = Helper()  # Instancia de Helper
+
+    # 🔹 Obtener los datos del juego desde la API
+    juego = helper.obtener_juego(juego_id)
+
+    # 🔹 Crear el formulario con los datos actuales del juego
+    formulario = JuegoForm(
+        datosFormulario,
+        initial={
+            'nombre': juego['nombre'],
+            'descripcion': juego["descripcion"],
+            'genero': juego["genero"],
+            'id_consola': str(juego['id_consola']),  # Convertimos ID a string para que coincida con el ChoiceField
+            'torneo': str(juego['torneo'])  # Convertimos ID a string
+        }
+    )
+
+    if request.method == "POST":
+        formulario = JuegoForm(request.POST)
+        
+        if formulario.is_valid():
+            datos = request.POST.copy()
+            datos["torneo"] = request.POST.get("torneo")
+            datos["id_consola"] = request.POST.get("id_consola")
+
+            # 🔹 Enviar datos al servidor para actualizar el juego
+            response = requests.put(
+                f'{API_BASE_URL}juegos/editar/{juego_id}/',
+                headers={
+                    'Authorization': f'Bearer {USER_KEY_ADMINISTRADOR}',
+                    'Content-Type': 'application/json'
+                },
+                data=json.dumps(datos)
+            )
+
+            if response.status_code == 200:
+                return redirect("juegos_lista")  
+            else:
+                if response.status_code == 400:
+                    errores = response.json()
+                    for campo, mensaje in errores.items():
+                        formulario.add_error(campo, mensaje)
+                else:
+                    return tratar_errores(request, response.status_code)
+
+    return render(request, 'cliente/create/editar_juego.html', {"formulario": formulario, "juego": juego})
+
+
 
 
 def tratar_errores(request,codigo):

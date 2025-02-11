@@ -1,29 +1,39 @@
 {% extends 'cliente/estructura/base.html' %}
 
 {% block content %}
-    <h1>Lista de Juegos</h1>
-    <ul>
+    <h1 class="display-3 text-center mb-4">Lista de Juegos</h1>
+    <div class="container">
         {% for juego in juegos_mostrar %}
-            <li>
-                <strong>{{ juego.nombre }}</strong>
-                <br>
-                Género: {{ juego.genero }} 
-                <br>
-                Descripción: {{ juego.descripcion }}
-                <br>
-                Consola: {{ juego.consola }}  <!-- Mostrar el nombre de la consola -->
-                <br>
-                Torneo(s): 
-                {% for torneo in juego.torneos %}
-                    Nombre torneo: <span>{{ torneo.nombre }}</span>
-                    <br>
-                    Descripcion torneo :<span>{{torneo.descripcion}}</span>
-                {% empty %}
-                    <span>No asignado a ningún torneo</span>
-                {% endfor %}
-            </li>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">{{ juego.nombre }}</h5>
+                    <p class="card-text"><strong>Género:</strong> {{ juego.genero }}</p>
+                </div>
+                <div class="card-body">
+                    <p class="card-text"><strong>Descripción:</strong> {{ juego.descripcion }}</p>
+
+                    <h6 class="mt-3">Consola:</h6>
+                    <p class="card-text">
+                        <span class="badge bg-info">{{ juego.consola }}</span>  <!-- Estiliza el nombre de la consola -->
+                    </p>
+
+                    <h6 class="mt-3">Torneos Asociados:</h6>
+                    {% if juego.torneos %}
+                        <ul class="list-group">
+                            {% for torneo in juego.torneos %}
+                                <li class="list-group-item">
+                                    <strong>{{ torneo.nombre }}</strong><br>
+                                    <small>Descripción: {{ torneo.descripcion }}</small>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No está asociado a ningún torneo.</p>
+                    {% endif %}
+                </div>
+            </div>
         {% empty %}
-            <li>No hay juegos disponibles.</li>
+            <p class="text-center">No hay juegos disponibles.</p>
         {% endfor %}
-    </ul>
+    </div>
 {% endblock %}

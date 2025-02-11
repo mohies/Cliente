@@ -124,11 +124,63 @@ class TorneoForm(forms.Form):
 class TorneoActualizarNombreForm(forms.Form):
     nombre = forms.CharField(
         label="Nuevo Nombre del Torneo",
+        max_length=200,
+        help_text="200 caracteres como máximo"
+    )
+    
+    
+class JuegoForm(forms.Form):
+    GENEROS_CHOICES = [
+        ("", "Selecciona un género"),  # Opción vacía por defecto
+        ("Acción", "Acción"),
+        ("Aventura", "Aventura"),
+        ("Estrategia", "Estrategia"),
+        ("Deportes", "Deportes"),
+        ("RPG", "RPG"),
+        ("Shooter", "Shooter"),
+    ]
+
+    nombre = forms.CharField(
+        label="Nombre del Juego",
         required=True,
         max_length=200,
         help_text="200 caracteres como máximo"
     )
+    
+    descripcion = forms.CharField(
+        label="Descripción",
+        widget=forms.Textarea(),
+        required=False,
+        help_text="Mínimo 10 caracteres."
+    )
+    
+    genero = forms.ChoiceField(
+        label="Género",
+        choices=GENEROS_CHOICES,
+        required=False,  # 🔹 Permitir enviar vacío para que el servidor lo valide
+        help_text="Selecciona un género"
+    )
 
+    def __init__(self, *args, **kwargs):
+        super(JuegoForm, self).__init__(*args, **kwargs)
+        
+        helper = Helper()
+        
+        # Obtener los torneos disponibles desde la API
+        torneosDisponibles = helper.obtener_torneos_select()
+        self.fields["torneo"] = forms.ChoiceField(
+            choices=torneosDisponibles,
+            required=True,
+            help_text="Selecciona un torneo"
+        )
+        
+        # Obtener las consolas disponibles desde la API
+        consolasDisponibles = helper.obtener_consolas_select()
+        self.fields["id_consola"] = forms.ChoiceField(
+            choices=consolasDisponibles,
+            required=True,
+            help_text="Selecciona una consola"
+        )
 
 
 

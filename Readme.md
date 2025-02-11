@@ -50,7 +50,7 @@ Invoke-WebRequest -Uri "http://127.0.0.1:8000/oauth2/token/" `
                   -Method POST `
                   -Body "grant_type=password&username=javier&password=elpepe34&client_id=loloid&client_secret=lolosecreto" `
 
-Invoke-WebRequest -Uri "https://mohbenbou.pythonanywhere.com/oauth2/token/" `
+Invoke-WebRequest -Uri "http://127.0.0.1:8000/oauth2/token/" `
                   -Method POST `
                   -Body "grant_type=password&username=admin&password=admin&client_id=pepeid&client_secret=pepesecreto" `
                   -ContentType "application/x-www-form-urlencoded"

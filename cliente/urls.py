@@ -16,6 +16,10 @@ urlpatterns = [
     path('editar-torneo/<int:torneo_id>/', views.editar_torneo, name='editar_torneo'),
     path('torneos/actualizar-nombre/<int:torneo_id>/', views.torneo_editar_nombre, name='torneo_editar_nombre'),
     path('torneos/eliminar/<int:torneo_id>/', views.torneo_eliminar, name='torneo_eliminar'),
+    path('juegos/crear/', views.crear_juego, name='crear_juego'),
+    path('juegos/editar/<int:juego_id>/', views.editar_juego, name='editar_juego'),
+
+
 
 
 
