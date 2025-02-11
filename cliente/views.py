@@ -27,7 +27,8 @@ print(USER_KEY_ADMINISTRADOR)
 
 def crear_cabecera():
     return {
-        'Authorization': 'Bearer KVmOJFR8XecCfMWdS0StpwVmRSb4Yt'
+        'Authorization': 'Bearer kCaflRfD4YsKdaNkhQzM4ZBnfggXX3',
+        "Content-Type": "application/json"
         }
 
 # Definimos por defecto la version que tenemos de la API y las establecemos en nuestras aplicaciones
@@ -320,7 +321,7 @@ def editar_torneo(request, torneo_id):
             )
 
             if response.status_code == 200:
-                return redirect("torneo_mostrar", torneo_id=torneo_id)
+                return redirect("listar_torneos")
             else:
                 if response.status_code == 400:
                     errores = response.json()
@@ -342,6 +343,85 @@ def editar_torneo(request, torneo_id):
         )
 
     return render(request, 'cliente/create/editar_torneo.html', {"formulario": formulario, "torneo": torneo})
+
+def torneo_editar_nombre(request, torneo_id):
+    """
+    Vista para actualizar solo el nombre de un torneo.
+    """
+    datosFormulario = None
+
+    if request.method == "POST":
+        datosFormulario = request.POST
+
+    helper = Helper()  # Instancia del Helper
+    torneo = helper.obtener_torneo(torneo_id)  # Obtenemos los datos del torneo desde la API
+
+    # Crear el formulario con el nombre actual
+    formulario = TorneoActualizarNombreForm(
+        datosFormulario,
+        initial={'nombre': torneo['nombre']}
+    )
+
+    if request.method == "POST":
+        try:
+            formulario = TorneoActualizarNombreForm(request.POST)
+            headers = crear_cabecera()  # Usa la cabecera con autorización
+
+            datos = {"nombre": request.POST.get("nombre")}  # ✅ Extraemos solo el nombre
+
+            response = requests.patch(
+                f'{API_BASE_URL}torneos/actualizar-nombre/{torneo_id}/',
+                headers=headers,
+                data=json.dumps(datos)
+            )
+
+            if response.status_code == requests.codes.ok:
+                return redirect("listar_torneos")  # ✅ Usa la URL correcta
+
+            else:
+                print(response.status_code)
+                response.raise_for_status()
+
+        except HTTPError as http_err:
+            print(f'Hubo un error en la petición: {http_err}')
+            if response.status_code == 400:
+                errores = response.json()
+                for error in errores:
+                    formulario.add_error(error, errores[error])
+                return render(request, 'cliente/create/actualizar_nombre_torneo.html', {"formulario": formulario, "torneo": torneo})
+            else:
+                return mi_error_500(request)
+
+        except Exception as err:
+            print(f'Ocurrió un error: {err}')
+            return mi_error_500(request)
+
+    return render(request, 'cliente/create/actualizar_nombre_torneo.html', {"formulario": formulario, "torneo": torneo})
+
+
+def torneo_eliminar(request, torneo_id):
+    """
+    Vista para eliminar un torneo siguiendo el formato exacto del profesor.
+    """
+    try:
+        headers = crear_cabecera()  # ✅ Usa la misma función que el profesor
+
+        response = requests.delete(
+            f'{API_BASE_URL}torneos/eliminar/{torneo_id}/',
+            headers=headers,
+        )
+
+        if response.status_code == requests.codes.ok:
+            return redirect("listar_torneos")  # ✅ Redirige a la lista de torneos después de eliminar
+        else:
+            print(response.status_code)
+            response.raise_for_status()
+
+    except Exception as err:
+        print(f'Ocurrió un error: {err}')
+        return mi_error_500(request)
+
+    return redirect("listar_torneos")  # ✅ Redirige de todas formas
 
 
 def tratar_errores(request,codigo):

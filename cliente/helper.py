@@ -4,7 +4,7 @@ import os
 
 def crear_cabecera():
     return {
-        'Authorization': 'Bearer KVmOJFR8XecCfMWdS0StpwVmRSb4Yt',
+        'Authorization': 'Bearer kCaflRfD4YsKdaNkhQzM4ZBnfggXX3',
         'Content-Type': 'application/json'
     }
 
