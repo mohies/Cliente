@@ -1,31 +1,55 @@
 {% extends 'cliente/estructura/base.html' %}
 
 {% block content %}
-    <h1>Lista de Participantes</h1>
-    <ul>
+    <h1 class="display-3 text-center mb-4">Lista de Participantes</h1>
+    <div class="container">
         {% for participante in participantes_mostrar %}
-            <li>
-                <strong>{{ participante.usuario.nombre }}</strong>  <!-- Acceso al nombre del usuario -->
-                <br>
-                Username: {{ participante.nombre_usuario }}  <!-- Acceso al correo (puedes mostrar el correo como username si lo deseas) -->
-                <br>
-                Puntos: {{ participante.puntos_obtenidos }}  <!-- Acceso a los puntos obtenidos del participante -->
-                <br>
-                Fecha de Registro: {{ participante.fecha_inscripcion }}  <!-- Fecha de inscripción del participante -->
-                <br>
-                Ranking: {{ participante.posicion_final }}  <!-- Acceso al ranking desde el perfil de jugador -->
-                <br>
-                Tiempo Jugado : {{ participante.tiempo_jugado }}
-                <br>
-                Equipos: 
-                {% for equipo in participante.equipos %}
-                    <span>{{ equipo.nombre }}</span>  <!-- Mostrar nombre de los equipos asociados -->
-                {% empty %}
-                    <span>No asignado a ningún equipo</span>
-                {% endfor %}
-            </li>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">{{ participante.usuario.nombre }}</h5>
+                    <p class="card-text"><strong>Username:</strong> {{ participante.nombre_usuario }}</p>
+                </div>
+                <div class="card-body">
+                    <p class="card-text"><strong>Puntos:</strong> {{ participante.puntos_obtenidos }}</p>
+                    <p class="card-text"><strong>Fecha de Registro:</strong> {{ participante.fecha_inscripcion }}</p>
+                    <p class="card-text"><strong>Ranking:</strong> {{ participante.posicion_final }}</p>
+                    <p class="card-text"><strong>Tiempo Jugado:</strong> {{ participante.tiempo_jugado }}</p>
+
+                    <h6 class="mt-3">Equipos:</h6>
+                    {% if participante.equipos %}
+                        <ul class="list-group">
+                            {% for equipo in participante.equipos %}
+                                <li class="list-group-item">
+                                    <strong>{{ equipo.nombre }}</strong>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No está asociado a ningún equipo.</p>
+                    {% endif %}
+
+                    <!-- 🔹 BOTONES PARA EDITAR Y ELIMINAR -->
+                    <div class="mt-4 d-flex justify-content-end">
+                        <!-- Botón para Editar Equipos -->
+                        <a href="{% url 'participante_editar_equipos' participante.id %}" class="btn btn-warning me-2">
+                            Editar Equipos
+                        </a>
+
+                        <!-- Botón para Editar Participante Completo -->
+                        <a href="{% url 'editar_participante' participante.id %}" class="btn btn-primary me-2">
+                            Editar Participante
+                        </a>
+
+                        <!-- Botón para Eliminar Participante -->
+                        <a href="{% url 'participante_eliminar' participante.id %}" class="btn btn-danger"
+                           onclick="return confirm('¿Estás seguro de que quieres eliminar este participante?');">
+                            Eliminar
+                        </a>
+                    </div>
+                </div>
+            </div>
         {% empty %}
-            <li>No hay participantes disponibles.</li>
+            <p class="text-center">No hay participantes disponibles.</p>
         {% endfor %}
-    </ul>
+    </div>
 {% endblock %}

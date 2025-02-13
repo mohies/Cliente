@@ -18,6 +18,18 @@ urlpatterns = [
     path('torneos/eliminar/<int:torneo_id>/', views.torneo_eliminar, name='torneo_eliminar'),
     path('juegos/crear/', views.crear_juego, name='crear_juego'),
     path('juegos/editar/<int:juego_id>/', views.editar_juego, name='editar_juego'),
+    path('juegos/actualizar-nombre/<int:juego_id>/', views.juego_editar_nombre, name='juego_editar_nombre'),
+    path('juegos/eliminar/<int:juego_id>/', views.juego_eliminar, name='juego_eliminar'),
+    path('participantes/crear/', views.crear_participante, name='crear_participante'),
+    path('participantes/editar/<int:participante_id>/', views.editar_participante, name='editar_participante'),
+    path('participantes/editar-equipo/<int:participante_id>/', views.participante_editar_equipos, name='participante_editar_equipos'),
+    path('participantes/eliminar/<int:participante_id>/', views.participante_eliminar, name='participante_eliminar'),
+
+
+    
+
+
+
 
 
 

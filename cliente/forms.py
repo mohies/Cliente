@@ -182,8 +182,78 @@ class JuegoForm(forms.Form):
             help_text="Selecciona una consola"
         )
 
+class JuegoActualizarNombreForm(forms.Form):
+    nombre = forms.CharField(
+        label="Nuevo Nombre del Juego",
+        max_length=200,
+        help_text="200 caracteres como máximo"
+    )
+    
+    
+    
+class ParticipanteForm(forms.Form):
+    usuario = forms.ChoiceField(
+        label="Usuario",
+        required=False,
+        help_text="Selecciona el usuario asociado",
+    )
+
+    puntos_obtenidos = forms.IntegerField(
+    label="Puntos Obtenidos",
+    required=False,
+    help_text="Introduce los puntos obtenidos (pueden ser negativos o positivos)"
+    )
 
 
+    posicion_final = forms.IntegerField(
+        label="Posición Final",
+        required=False,
+        help_text="Introduce la posición final (opcional)"
+    )
+
+    fecha_inscripcion = forms.DateField(
+        label="Fecha de Inscripción",
+        initial=datetime.date.today,
+        widget=forms.SelectDateWidget(years=range(2000, 2030))
+    )
+
+    tiempo_jugado = forms.FloatField(
+        label="Tiempo Jugado (horas)",
+        required=False,
+        min_value=0,
+        help_text="Tiempo total jugado en horas"
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(ParticipanteForm, self).__init__(*args, **kwargs)
+        
+        helper = Helper()  # Instancia de Helper
+        
+        # Obtener los usuarios disponibles desde la API
+        usuariosDisponibles = helper.obtener_usuarios_select()
+        self.fields["usuario"].choices = usuariosDisponibles
+
+        # Obtener los equipos disponibles desde la API
+        equiposDisponibles = helper.obtener_equipos_select()
+        self.fields["equipos"] = forms.MultipleChoiceField(
+            choices=equiposDisponibles,
+            required=False,  # Puede no tener equipos
+            help_text="Mantén pulsada la tecla Control para seleccionar varios equipos"
+        )
+
+
+class ParticipanteActualizarEquiposForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(ParticipanteActualizarEquiposForm, self).__init__(*args, **kwargs)
+
+        helper = Helper()  # Instancia del Helper
+        equiposDisponibles = helper.obtener_equipos_select()  # 🔹 Obtener equipos desde API
+
+        self.fields["equipos"] = forms.MultipleChoiceField(
+            choices=equiposDisponibles,
+            required=False,  # ✅ Puede no tener equipos asignados
+            help_text="Mantén pulsada la tecla Control para seleccionar varios equipos"
+        )
 
 
 
