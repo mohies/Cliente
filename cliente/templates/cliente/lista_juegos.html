@@ -30,6 +30,25 @@
                     {% else %}
                         <p>No está asociado a ningún torneo.</p>
                     {% endif %}
+
+                    <!-- 🔹 BOTONES PARA EDITAR Y ELIMINAR -->
+                    <div class="mt-4 d-flex justify-content-end">
+                        <!-- Botón para Editar Nombre -->
+                        <a href="{% url 'juego_editar_nombre' juego.id %}" class="btn btn-warning me-2">
+                            Editar Nombre
+                        </a>
+
+                        <!-- Botón para Editar Juego Completo -->
+                        <a href="{% url 'editar_juego' juego.id %}" class="btn btn-primary me-2">
+                            Editar Juego
+                        </a>
+
+                        <!-- Botón para Eliminar Juego -->
+                        <a href="{% url 'juego_eliminar' juego.id %}" class="btn btn-danger"
+                           onclick="return confirm('¿Estás seguro de que quieres eliminar este juego?');">
+                            Eliminar
+                        </a>
+                    </div>
                 </div>
             </div>
         {% empty %}

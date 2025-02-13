@@ -1,4 +1,3 @@
-<!-- filepath: /c:/Users/mohce/OneDrive/Escritorio/Cliente/cliente/templates/cliente/estructura/menu.html -->
 {% load static %}
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
@@ -14,7 +13,7 @@
             </li>
             <!-- Enlace a Búsqueda SINV -->
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'torneo_buscar_avanzado_sin_validaciones' %}">Busqueda SINV</a>
+                <a class="nav-link" href="{% url 'torneo_buscar_avanzado_sin_validaciones' %}">Búsqueda SINV</a>
             </li>
             <!-- Menú desplegable para Búsquedas Avanzadas -->
             <li class="nav-item dropdown">
@@ -35,6 +34,26 @@
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownTorneos">
                     <li><a class="dropdown-item" href="{% url 'listar_torneos' %}">Listar Torneos</a></li>
                     <li><a class="dropdown-item" href="{% url 'crear_torneo' %}">Crear Torneo</a></li>
+                </ul>
+            </li>
+            <!-- Menú desplegable para Juegos -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownJuegos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Juegos
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownJuegos">
+                    <li><a class="dropdown-item" href="{% url 'juegos_lista' %}">Listar Juegos</a></li>
+                    <li><a class="dropdown-item" href="{% url 'crear_juego' %}">Crear Juego</a></li>
+                </ul>
+            </li>
+            <!-- Menú desplegable para Participantes -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownParticipantes" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Participantes
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownParticipantes">
+                    <li><a class="dropdown-item" href="{% url 'participantes_lista' %}">Listar Participantes</a></li>
+                    <li><a class="dropdown-item" href="{% url 'crear_participante' %}">Crear Participante</a></li>
                 </ul>
             </li>
         </ul>

@@ -27,7 +27,7 @@ print(USER_KEY_ADMINISTRADOR)
 
 def crear_cabecera():
     return {
-        'Authorization': 'Bearer Nz0FVzhXHFReAXVnGHgLcaX6c9Jk2k',
+        'Authorization': 'Bearer MMa4V7TzIMdRgUZ09iGKFmnlosO4IG',
         "Content-Type": "application/json"
         }
 
@@ -443,7 +443,7 @@ def crear_juego(request):
                 )
 
                 if response.status_code == requests.codes.ok:
-                    return redirect("juegos_lista")  # ✅ Redirige después de crear
+                    return redirect("juegos_lista")  #Redirige después de crear
                 else:
                     print(response.status_code)
                     response.raise_for_status()
@@ -526,6 +526,287 @@ def editar_juego(request, juego_id):
                     return tratar_errores(request, response.status_code)
 
     return render(request, 'cliente/create/editar_juego.html', {"formulario": formulario, "juego": juego})
+
+
+
+
+def juego_editar_nombre(request, juego_id):
+    """
+    Vista para actualizar solo el nombre de un juego.
+    """
+    datosFormulario = None
+
+    if request.method == "POST":
+        datosFormulario = request.POST
+
+    helper = Helper()  # Instancia del Helper
+    juego = helper.obtener_juego(juego_id)  # Obtenemos los datos del juego desde la API
+
+    # Crear el formulario con el nombre actual del juego
+    formulario = JuegoActualizarNombreForm(
+        datosFormulario,
+        initial={'nombre': juego['nombre']}
+    )
+
+    if request.method == "POST":
+        try:
+            formulario = JuegoActualizarNombreForm(request.POST)
+            headers = crear_cabecera()  
+
+            datos = {"nombre": request.POST.get("nombre")} 
+
+            response = requests.patch(
+                f'{API_BASE_URL}juegos/actualizar-nombre/{juego_id}/',
+                headers=headers,
+                data=json.dumps(datos)
+            )
+
+            if response.status_code == requests.codes.ok:
+                return redirect("juegos_lista")  
+
+            else:
+                print(response.status_code)
+                response.raise_for_status()
+
+        except HTTPError as http_err:
+            print(f'Hubo un error en la petición: {http_err}')
+            if response.status_code == 400:
+                errores = response.json()
+                for error in errores:
+                    formulario.add_error(error, errores[error])
+                return render(request, 'cliente/create/actualizar_nombre_juego.html', {"formulario": formulario, "juego": juego})
+            else:
+                return mi_error_500(request)
+
+        except Exception as err:
+            print(f'Ocurrió un error: {err}')
+            return mi_error_500(request)
+
+    return render(request, 'cliente/create/actualizar_nombre_juego.html', {"formulario": formulario, "juego": juego})
+
+
+
+def juego_eliminar(request, juego_id):
+    try:
+        headers = crear_cabecera() 
+        response = requests.delete(
+            f'{API_BASE_URL}juegos/eliminar/{juego_id}/',
+            headers=headers,
+        )
+
+        if response.status_code == requests.codes.ok:
+            return redirect("juegos_lista")
+        else:
+            print(response.status_code)
+            response.raise_for_status()
+
+    except Exception as err:
+        print(f'Ocurrió un error: {err}')
+        return mi_error_500(request)
+
+    return redirect("juegos_lista") 
+
+
+def crear_participante(request):
+    if request.method == 'POST':
+        try:
+            formulario = ParticipanteForm(request.POST)
+            headers = {
+                'Authorization': f'Bearer {USER_KEY_ADMINISTRADOR}',
+                'Content-Type': 'application/json'
+            }
+
+            datos = formulario.data.copy()
+
+            # Convertir fecha_inscripcion a string en formato YYYY-MM-DD
+            datos["fecha_inscripcion"] = str(
+                datetime.date(year=int(datos['fecha_inscripcion_year']),
+                              month=int(datos['fecha_inscripcion_month']),
+                              day=int(datos['fecha_inscripcion_day']))
+            )
+
+            # Obtener la lista de equipos seleccionados
+            datos["equipos"] = request.POST.getlist("equipos")
+
+            response = requests.post(
+                f'{API_BASE_URL}participantes/crear/',
+                headers=headers,
+                data=json.dumps(datos)
+            )
+
+            if response.status_code == requests.codes.ok:
+                return redirect("participantes_lista")  # Redirige después de crear
+            else:
+                print(response.status_code)
+                response.raise_for_status()
+
+        except HTTPError as http_err:
+            print(f'Hubo un error en la petición: {http_err}')
+            if response.status_code == 400:
+                errores = response.json()
+                for campo, mensaje in errores.items():
+                    formulario.add_error(campo, mensaje)  # Agrega errores específicos
+                return render(request, 'cliente/create/crear_participante.html', {"formulario": formulario})
+            else:
+                return mi_error_500(request)
+
+        except Exception as err:
+            print(f'Ocurrió un error: {err}')
+            formulario.add_error(None, f"Ocurrió un error inesperado: {err}")  # Mensaje de error global
+            return render(request, 'cliente/create/crear_participante.html', {"formulario": formulario})
+
+    else:
+        formulario = ParticipanteForm(None)
+
+    return render(request, 'cliente/create/crear_participante.html', {"formulario": formulario})
+
+
+
+def editar_participante(request, participante_id):
+    """
+    Vista para editar un participante
+    """
+    helper = Helper()  # Instancia de Helper
+
+    # Obtener los datos del participante desde la API
+    participante = helper.obtener_participante(participante_id)
+
+    if request.method == "POST":
+        formulario = ParticipanteForm(request.POST)
+
+        if formulario.is_valid():
+            datos = request.POST.copy()
+            datos["equipos"] = request.POST.getlist("equipos")  # ManyToMany con Equipo
+            datos["fecha_inscripcion"] = str(datetime.date(
+                year=int(datos['fecha_inscripcion_year']),
+                month=int(datos['fecha_inscripcion_month']),
+                day=int(datos['fecha_inscripcion_day'])
+            ))
+
+            response = requests.put(
+                f'{API_BASE_URL}participantes/editar/{participante_id}/',
+                headers={
+                    'Authorization': f'Bearer {USER_KEY_ADMINISTRADOR}',
+                    'Content-Type': 'application/json'
+                },
+                data=json.dumps(datos)
+            )
+
+            if response.status_code == 200:
+                return redirect("participantes_lista")
+            else:
+                if response.status_code == 400:
+                    errores = response.json()
+                    for campo, mensaje in errores.items():
+                        formulario.add_error(campo, mensaje)
+                else:
+                    return tratar_errores(request, response.status_code)
+
+    else:
+        # Rellenamos el formulario solo si es una petición GET
+        formulario = ParticipanteForm(
+            initial={
+                'usuario': participante['usuario'],
+                'puntos_obtenidos': participante["puntos_obtenidos"],
+                'posicion_final': participante["posicion_final"],
+                'fecha_inscripcion': datetime.datetime.strptime(participante['fecha_inscripcion'], '%Y-%m-%d').date(),
+                'tiempo_jugado': participante["tiempo_jugado"],
+                'equipos': [str(equipo['id']) for equipo in participante['equipos']]
+            }
+        )
+
+    return render(request, 'cliente/create/editar_participante.html', {"formulario": formulario, "participante": participante})
+
+
+
+
+def participante_editar_equipos(request, participante_id):
+    """
+    Vista para actualizar los equipos de un participante.
+    """
+    datosFormulario = None
+
+    if request.method == "POST":
+        datosFormulario = request.POST
+
+    helper = Helper()  # Instancia del Helper
+    participante = helper.obtener_participante(participante_id)  # Obtener datos del participante
+
+    # Crear formulario con los equipos actuales seleccionados
+    formulario = ParticipanteActualizarEquiposForm(
+        datosFormulario,
+        initial={'equipos': [str(equipo['id']) for equipo in participante['equipos']]}
+    )
+
+    if request.method == "POST":
+        try:
+            formulario = ParticipanteActualizarEquiposForm(request.POST)
+            headers = crear_cabecera()  
+
+            datos = {"equipos": request.POST.getlist("equipos")}  # Lista de equipos seleccionados
+
+            response = requests.patch(
+                f'{API_BASE_URL}participantes/actualizar-equipos/{participante_id}/',
+                headers=headers,
+                data=json.dumps(datos)
+            )
+
+            if response.status_code == requests.codes.ok:
+                return redirect("participantes_lista")  # ✅ Redirigir después de actualizar
+
+            else:
+                print(response.status_code)
+                response.raise_for_status()
+
+        except HTTPError as http_err:
+            print(f'Hubo un error en la petición: {http_err}')
+            if response.status_code == 400:
+                errores = response.json()
+                for error in errores:
+                    formulario.add_error(error, errores[error])
+                return render(request, 'cliente/create/actualizar_equipos_participante.html', {"formulario": formulario, "participante": participante})
+            else:
+                return mi_error_500(request)
+
+        except Exception as err:
+            print(f'Ocurrió un error: {err}')
+            return mi_error_500(request)
+
+    return render(request, 'cliente/create/actualizar_equipos_participante.html', {"formulario": formulario, "participante": participante})
+
+
+def participante_eliminar(request, participante_id):
+    """
+    Vista para eliminar un participante desde el cliente.
+    """
+    try:
+        headers = crear_cabecera()  # Encabezados con autenticación
+        
+        response = requests.delete(
+            f'{API_BASE_URL}participantes/eliminar/{participante_id}/',
+            headers=headers,
+        )
+
+        if response.status_code == requests.codes.ok:
+            return redirect("participantes_lista")  # ✅ Redirige a la lista de participantes
+        else:
+            print(response.status_code)
+            response.raise_for_status()
+
+    except Exception as err:
+        print(f'Ocurrió un error: {err}')
+        return mi_error_500(request)
+
+    return redirect("participantes_lista")  # Redirige de todas formas
+
+
+
+
+
+
+
+
+
 
 
 

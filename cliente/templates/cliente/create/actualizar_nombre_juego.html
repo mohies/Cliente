@@ -1,0 +1,15 @@
+{% extends 'cliente/estructura/base.html' %}
+
+{% block content %}
+<h2>Editar Nombre del Juego</h2>
+<form action="{% url 'juego_editar_nombre' juego.id %}" method="post">
+    {% load django_bootstrap5 %}
+    {% csrf_token %}
+    <div class="mb-4">
+        {% bootstrap_form formulario %}
+    </div>
+    <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    </div>
+</form>
+{% endblock %}
