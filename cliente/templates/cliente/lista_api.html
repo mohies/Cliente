@@ -13,14 +13,37 @@
                 <div class="card-body">
                     <p class="card-text"><strong>Descripción:</strong> {{ torneo.descripcion }}</p>
 
+                    <!-- 🔹 PARTICIPANTES -->
                     <h6 class="mt-3">Participantes:</h6>
                     {% if torneo.participantes %}
                         <ul class="list-group">
-                            {% for torneo_participante in torneo.participantes %}
+                            {% for participante in torneo.participantes %}
                                 <li class="list-group-item">
-                                    <strong>{{ torneo_participante.usuario.nombre }}</strong><br>
-                                    <small>Puntos obtenidos: {{ torneo_participante.puntos_obtenidos }}</small><br>
-                                    <small>Posición final: {{ torneo_participante.posicion_final }}</small>
+                                    <strong>{{ participante.usuario.nombre }}</strong><br>
+                                    <small>Puntos obtenidos: {{ participante.puntos_obtenidos }}</small><br>
+                                    <small>Posición final: {{ participante.posicion_final }}</small><br>
+                                    <small>Tiempo jugado: {{ participante.tiempo_jugado }} horas</small><br>
+
+                                    <!-- Equipos -->
+                                    <small>Equipos:</small>
+                                    {% if participante.equipos %}
+                                        <ul>
+                                            {% for equipo in participante.equipos %}
+                                                <li>{{ equipo.nombre }} (Puntos: {{ equipo.puntos_contribuidos }})</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <small>No pertenece a ningún equipo.</small>
+                                    {% endif %}
+
+                                    <!-- Botones de acción -->
+                                    <div class="mt-2">
+                                        <a href="{% url 'editar_participante' participante.id %}" class="btn btn-primary btn-sm">Editar</a>
+                                        <a href="{% url 'participante_eliminar' participante.id %}" class="btn btn-danger btn-sm"
+                                           onclick="return confirm('¿Estás seguro de que quieres eliminar este participante?');">
+                                            Eliminar
+                                        </a>
+                                    </div>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -28,6 +51,40 @@
                         <p>No hay participantes registrados.</p>
                     {% endif %}
 
+                    <!-- 🔹 JUGADORES -->
+                    <h6 class="mt-3">Jugadores:</h6>
+                    {% if torneo.jugadores %}
+                        <ul class="list-group">
+                            {% for jugador in torneo.jugadores %}
+                                <li class="list-group-item">
+                                    <strong>{{ jugador.usuario.username }}</strong><br>
+                                    <small>Email: {{ jugador.usuario.email }}</small><br>
+                                    <small>Equipo: {% if jugador.equipo %}{{ jugador.equipo }}{% else %}No asignado{% endif %}</small><br>
+
+                                    <!-- Formulario para actualizar puntos -->
+                                    <form action="{% url 'editar_puntos_jugador' jugador.id %}" method="post" class="mt-2 d-flex align-items-center">
+                                        {% csrf_token %}
+                                        <label for="puntos_{{ jugador.id }}" class="me-2"><small>Puntos:</small></label>
+                                        <input type="number" name="puntos" id="puntos_{{ jugador.id }}" value="{{ jugador.puntos }}" class="form-control form-control-sm w-25 me-2">
+                                        <button type="submit" class="btn btn-success btn-sm">Actualizar</button>
+                                    </form>
+
+                                    <!-- Botones de acción -->
+                                    <div class="mt-2">
+                                        <a href="{% url 'editar_jugador' jugador.id %}" class="btn btn-warning btn-sm">Editar</a>
+                                        <a href="{% url 'jugador_eliminar_torneo' jugador.id torneo.id %}" class="btn btn-danger btn-sm"
+                                           onclick="return confirm('¿Estás seguro de que quieres eliminar este jugador del torneo?');">
+                                            Eliminar
+                                        </a>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No hay jugadores registrados.</p>
+                    {% endif %}
+
+                    <!-- 🔹 JUEGOS ASOCIADOS -->
                     <h6 class="mt-3">Juegos Asociados:</h6>
                     {% if torneo.juegos %}
                         <ul class="list-group">
@@ -35,7 +92,16 @@
                                 <li class="list-group-item">
                                     <strong>{{ juego.nombre }}</strong><br>
                                     <small>Fecha: {{ juego.fecha }}</small><br>
-                                    <small>Ubicación: {{ juego.ubicacion }}</small>
+                                    <small>Ubicación: {{ juego.ubicacion }}</small><br>
+                                    
+                                    <!-- Botones para editar/eliminar juegos -->
+                                    <div class="mt-2">
+                                        <a href="{% url 'editar_juego' juego.id %}" class="btn btn-info btn-sm">Editar</a>
+                                        <a href="{% url 'juego_eliminar' juego.id %}" class="btn btn-danger btn-sm"
+                                           onclick="return confirm('¿Seguro que deseas eliminar este juego?');">
+                                            Eliminar
+                                        </a>
+                                    </div>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -43,19 +109,10 @@
                         <p>No hay juegos asociados a este torneo.</p>
                     {% endif %}
 
-                    <!-- 🔹 BOTONES PARA EDITAR Y ELIMINAR -->
+                    <!-- 🔹 BOTONES PARA EDITAR Y ELIMINAR EL TORNEO -->
                     <div class="mt-4 d-flex justify-content-end">
-                        <!-- Botón para Editar Nombre -->
-                        <a href="{% url 'torneo_editar_nombre' torneo.id %}" class="btn btn-warning me-2">
-                            Editar Nombre
-                        </a>
-
-                        <!-- Botón para Editar Torneo Completo -->
-                        <a href="{% url 'editar_torneo' torneo.id %}" class="btn btn-primary me-2">
-                            Editar Torneo
-                        </a>
-
-                        <!-- Botón para Eliminar Torneo -->
+                        <a href="{% url 'torneo_editar_nombre' torneo.id %}" class="btn btn-warning me-2">Editar Nombre</a>
+                        <a href="{% url 'editar_torneo' torneo.id %}" class="btn btn-primary me-2">Editar Torneo</a>
                         <a href="{% url 'torneo_eliminar' torneo.id %}" class="btn btn-danger"
                            onclick="return confirm('¿Estás seguro de que quieres eliminar este torneo?');">
                             Eliminar

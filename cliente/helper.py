@@ -4,7 +4,7 @@ import os
 
 def crear_cabecera():
     return {
-        'Authorization': 'Bearer MMa4V7TzIMdRgUZ09iGKFmnlosO4IG',
+        'Authorization': 'Bearer KVmOJFR8XecCfMWdS0StpwVmRSb4Yt',
         'Content-Type': 'application/json'
     }
 
@@ -44,58 +44,3 @@ class Helper:
             return response.json()
         else:
             raise Exception(f"Error al obtener el torneo {torneo_id}: {response.status_code}")
-        
-        
-    def obtener_torneos_select(self):
-        headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}torneos/', headers=headers)
-        torneos = response.json()
-        return [(torneo['id'], torneo['nombre']) for torneo in torneos]
-
-    def obtener_consolas_select(self):
-        headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}consolas/', headers=headers)
-        consolas = response.json()
-        return [(consola['id'], consola['nombre']) for consola in consolas]
-    
-    
-    
-    def obtener_juego(self, juego_id):
-        """
-        Obtiene los datos de un juego específico desde la API.
-        """
-        headers = crear_cabecera()  # Usa la misma estructura de las otras funciones
-        response = requests.get(f'{API_BASE_URL}juegos/{juego_id}/', headers=headers)
-
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise Exception(f"Error al obtener el juego {juego_id}: {response.status_code}")
-        
-
-    def obtener_usuarios_select(self):
-        headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}usuarios/', headers=headers)
-        usuarios = response.json()
-        return [(usuario['id'], usuario['nombre']) for usuario in usuarios]
-
-    def obtener_equipos_select(self):
-        headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}equipos/', headers=headers)
-        equipos = response.json()
-        return [(equipo['id'], equipo['nombre']) for equipo in equipos]
-    
-    
-    def obtener_participante(self, participante_id):
-        """
-        Obtiene los datos de un participante específico desde la API.
-        """
-        headers = crear_cabecera()  # Usa la misma estructura de las otras funciones
-        response = requests.get(f'{API_BASE_URL}participantes/{participante_id}/', headers=headers)
-
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise Exception(f"Error al obtener el participante {participante_id}: {response.status_code}")
-
-
