@@ -258,6 +258,54 @@ class ParticipanteActualizarEquiposForm(forms.Form):
 
 
 
+class JugadorForm(forms.Form):
+    usuario = forms.ChoiceField(
+        label="Usuario",
+        required=True,
+        help_text="Selecciona el usuario que se convertirá en jugador"
+    )
+    
+    puntos = forms.IntegerField(
+        label="Puntos",
+        required=False,
+        min_value=0,
+        help_text="Debe ser mayor o igual a 0"
+    )
+    
+    equipo = forms.CharField(
+        label="Equipo",
+        required=False,
+        max_length=100,
+        help_text="Puedes dejarlo en blanco si el jugador no tiene equipo"
+    )
+
+    torneos = forms.MultipleChoiceField(
+        label="Torneos",
+        required=False,
+        help_text="Mantén pulsado Ctrl para seleccionar varios torneos"
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(JugadorForm, self).__init__(*args, **kwargs)
+        helper = Helper()
+        
+        # Obtener usuarios disponibles
+        usuarios_disponibles = helper.obtener_usuarioslogin_select()
+        self.fields["usuario"].choices = usuarios_disponibles
+        
+        # Obtener torneos disponibles
+        torneos_disponibles = helper.obtener_torneos_select()
+        self.fields["torneos"].choices = torneos_disponibles
+        
+        
+
+class JugadorActualizarPuntosForm(forms.Form):
+    puntos = forms.IntegerField(
+        label="Actualizar Puntos",
+        help_text="Introduce los puntos del jugador (debe ser un número positivo)"
+    )
+
+
 
 
 

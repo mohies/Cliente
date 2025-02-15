@@ -1,0 +1,25 @@
+{% extends 'cliente/estructura/base.html' %}
+
+{% block content %}
+<h2>Actualizar Puntos del Jugador</h2>
+
+{# Mensaje de error global si la API devuelve errores #}
+{% if formulario.non_field_errors %}
+    <div class="alert alert-danger">
+        {% for error in formulario.non_field_errors %}
+            <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<form action="{% url 'editar_puntos_jugador' jugador.id %}" method="post"> 
+    {% load django_bootstrap5 %}
+    {% csrf_token %}
+    <div class="mb-4">
+        {% bootstrap_form formulario %}
+    </div>
+    <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary">Actualizar Puntos</button>
+    </div>
+</form>
+{% endblock %}

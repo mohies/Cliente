@@ -27,7 +27,7 @@ print(USER_KEY_ADMINISTRADOR)
 
 def crear_cabecera():
     return {
-        'Authorization': 'Bearer MMa4V7TzIMdRgUZ09iGKFmnlosO4IG',
+        'Authorization': 'Bearer PUHJyMz5miDrM6vYCQK6gd7LQxeuMf',
         "Content-Type": "application/json"
         }
 
@@ -473,7 +473,7 @@ def crear_juego(request):
 
 def editar_juego(request, juego_id):
     """
-    Vista para editar un juego siguiendo el formato exacto del profesor.
+    Vista para editar un juego.
     """
     datosFormulario = None
     
@@ -798,6 +798,170 @@ def participante_eliminar(request, participante_id):
         return mi_error_500(request)
 
     return redirect("participantes_lista")  # Redirige de todas formas
+
+
+
+
+def crear_jugador(request):
+    if request.method == 'POST':
+        try:
+            formulario = JugadorForm(request.POST)
+            headers = {
+                'Authorization': f'Bearer {USER_KEY_ADMINISTRADOR}',
+                'Content-Type': 'application/json'
+            }
+
+            if formulario.is_valid():
+                datos = formulario.cleaned_data.copy()
+                datos["torneos"] = request.POST.getlist("torneos")  # ManyToMany con Torneo
+
+                response = requests.post(
+                    f'{API_BASE_URL}jugadores/crear/',
+                    headers=headers,
+                    data=json.dumps(datos)
+                )
+
+                if response.status_code == requests.codes.ok:
+                    return redirect("listar_torneos")  # ✅ Redirige después de crear
+                else:
+                    print(response.status_code)
+                    response.raise_for_status()
+
+        except HTTPError as http_err:
+            print(f'Hubo un error en la petición: {http_err}')
+            if response.status_code == 400:
+                errores = response.json()
+                for campo, mensaje in errores.items():
+                    formulario.add_error(campo, mensaje)  # Agrega errores específicos
+                return render(request, 'cliente/create/crear_jugador.html', {"formulario": formulario})
+            else:
+                return mi_error_500(request)
+
+        except Exception as err:
+            print(f'Ocurrió un error: {err}')
+            formulario.add_error(None, f"Ocurrió un error inesperado: {err}")  # Mensaje de error global
+            return render(request, 'cliente/create/crear_jugador.html', {"formulario": formulario})
+
+    else:
+        formulario = JugadorForm(None)
+
+    return render(request, 'cliente/create/crear_jugador.html', {"formulario": formulario})
+
+
+def editar_jugador(request, jugador_id):
+    """
+    Vista para editar un jugador siguiendo el formato exacto del profesor.
+    """
+    helper = Helper()  # Instancia de Helper
+
+    # 🔹 Obtener los datos del jugador desde la API
+    jugador = helper.obtener_jugador(jugador_id)
+
+    if request.method == "POST":
+        formulario = JugadorForm(request.POST)
+
+        if formulario.is_valid():
+            datos = request.POST.copy()
+            datos["torneos"] = request.POST.getlist("torneos")  # ManyToMany con Torneos
+
+            response = requests.put(
+                f'{API_BASE_URL}jugadores/editar/{jugador_id}/',
+                headers=crear_cabecera(),
+                data=json.dumps(datos)
+            )
+
+            if response.status_code == 200:
+                return redirect("listar_torneos")
+            else:
+                if response.status_code == 400:
+                    errores = response.json()
+                    for campo, mensaje in errores.items():
+                        formulario.add_error(campo, mensaje)
+                else:
+                    return tratar_errores(request, response.status_code)
+
+    else:
+        # Rellenamos el formulario solo si es una petición GET
+        formulario = JugadorForm(
+            initial={
+                'usuario': jugador['usuario']['id'],
+                'puntos': jugador["puntos"],
+                'equipo': jugador["equipo"] if jugador["equipo"] else "",
+                'torneos': [str(torneo['id']) for torneo in jugador['torneos']]
+            }
+        )
+
+    return render(request, 'cliente/create/editar_jugador.html', {"formulario": formulario, "jugador": jugador})
+
+
+
+def editar_puntos_jugador(request, jugador_id):
+    """
+    Vista para actualizar los puntos de un jugador.
+    """
+    helper = Helper()  # Instancia del Helper para llamar a la API
+
+    # 🔹 Obtener los datos actuales del jugador
+    jugador = helper.obtener_jugador(jugador_id)
+
+    if request.method == "POST":
+        formulario = JugadorActualizarPuntosForm(request.POST)
+
+        if formulario.is_valid():
+            datos = request.POST.copy()
+
+            response = requests.patch(
+                f'{API_BASE_URL}jugadores/actualizar_puntos/{jugador_id}/',
+                headers=crear_cabecera(),
+                data=json.dumps(datos)
+            )
+
+            if response.status_code == 200:
+                return redirect("listar_torneos")  
+            else:
+                if response.status_code == 400:
+                    errores = response.json()
+                    for campo, mensaje in errores.items():
+                        formulario.add_error(campo, mensaje)
+                else:
+                    return tratar_errores(request, response.status_code)
+
+    else:
+        formulario = JugadorActualizarPuntosForm(initial={"puntos": jugador["puntos"]})
+
+    return render(request, 'cliente/create/actualizar_puntos_jugador.html', {"formulario": formulario, "jugador": jugador})
+
+
+
+def jugador_eliminar_torneo(request, jugador_id, torneo_id):
+    """
+    Vista para eliminar la relación de un jugador con un torneo desde el cliente.
+    """
+    try:
+        headers = crear_cabecera()  # Encabezados con autenticación
+
+        response = requests.delete(
+            f'{API_BASE_URL}jugadores/eliminar/{jugador_id}/{torneo_id}/',
+            headers=headers,
+        )
+
+        if response.status_code == requests.codes.ok:
+            return redirect("listar_torneos")  # ✅ Redirige a la lista de torneos
+        else:
+            print(response.status_code)
+            response.raise_for_status()
+
+    except Exception as err:
+        print(f'Ocurrió un error: {err}')
+        return mi_error_500(request)
+
+    return redirect("listar_torneos")  # Redirige de todas formas
+
+
+
+
+
+
 
 
 
