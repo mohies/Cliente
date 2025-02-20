@@ -12,7 +12,7 @@
     </div>
 {% endif %}
 
-<form action="{% url 'editar_torneo' torneo.id %}" method="post"> 
+<form action="{% url 'editar_torneo' torneo.id %}" method="post" enctype="multipart/form-data"> 
     {% load django_bootstrap5 %}
     {% csrf_token %}
     <div class="mb-4">

@@ -99,23 +99,21 @@ class TorneoForm(forms.Form):
     )
     
     duracion = forms.DurationField(label="Duración")
+    
+    imagen = forms.FileField(
+        label="Archivo del Torneo",
+        required=False,  # Si es obligatorio, ponlo como True
+        help_text="Sube un archivo (puede ser una imagen u otro tipo de archivo)"
+    )
 
     def __init__(self, *args, **kwargs):
         super(TorneoForm, self).__init__(*args, **kwargs)
         
         helper = Helper()
         
-        # Obtener los participantes disponibles desde la API
-        participantesDisponibles = helper.obtener_participantes_select()
-        self.fields["participantes"] = forms.MultipleChoiceField(
-            choices=participantesDisponibles,
-            required=True,
-            help_text="Mantén pulsada la tecla Control para seleccionar varios elementos"
-        )
-        
         # Obtener las categorías disponibles desde la API
         categoriasDisponibles = helper.obtener_categorias_select()
-        self.fields["categoria"] = forms.ChoiceField(  # Cambiado de MultipleChoiceField a ChoiceField
+        self.fields["categoria"] = forms.ChoiceField(  
             choices=categoriasDisponibles,
             required=True,
             help_text="Selecciona una categoría"

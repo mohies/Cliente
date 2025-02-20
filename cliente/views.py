@@ -1,3 +1,4 @@
+import base64
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import *
@@ -231,6 +232,10 @@ def crear_torneo(request):
                               month=int(datos['fecha_inicio_month']),
                               day=int(datos['fecha_inicio_day']))
             )
+            if 'imagen' in request.FILES:
+                imagen = request.FILES["imagen"]
+                datos["imagen"] = base64.b64encode(imagen.read()).decode('utf-8')  
+            
             response = requests.post(
                 f'{API_BASE_URL}torneos/crear/',
                 headers=headers,
