@@ -304,6 +304,16 @@ class JugadorActualizarPuntosForm(forms.Form):
     )
 
 
+class TorneoActualizarImagenForm(forms.Form):
+    imagen = forms.FileField(
+        label="Nueva Imagen del Torneo",
+        required=True,  # La imagen es obligatoria para actualizarla
+        help_text="Sube una nueva imagen para el torneo"
+    )
+
+
+
+
 
 
 

@@ -109,9 +109,9 @@ class Helper:
 
         if response.status_code == 200:
             usuarios = response.json()
-            return [(usuario['id'], usuario['username']) for usuario in usuarios]  # ✅ Cambiado a 'username'
+            return [(usuario['id'], usuario['username']) for usuario in usuarios]  
         
-        return []  # Si hay error, retorna lista vacía
+        return [] 
     
     def obtener_torneos_select(self):
         """

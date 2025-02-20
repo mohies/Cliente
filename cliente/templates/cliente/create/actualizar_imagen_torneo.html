@@ -2,14 +2,9 @@
 
 {% block content %}
 <h2>Editar Imagen del Torneo</h2>
-<form action="{% url 'torneo_editar_imagen' torneo.id %}" method="post" enctype="multipart/form-data">
-    {% load django_bootstrap5 %}
+<form action="{% url 'torneo_actualizar_imagen' torneo.id %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <div class="mb-4">
-        {% bootstrap_form formulario %}
-    </div>
-    <div class="d-flex justify-content-end">
-        <button type="submit" class="btn btn-primary">Guardar cambios</button>
-    </div>
+    {{ formulario.as_p }}
+    <button type="submit" class="btn btn-primary">Actualizar Imagen</button>
 </form>
 {% endblock %}
