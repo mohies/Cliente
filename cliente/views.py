@@ -355,6 +355,67 @@ def torneo_editar_nombre(request, torneo_id):
         logger.error(f'Ocurrió un error: {err}')
         messages.error(request, 'Ocurrió un error inesperado. Por favor, intenta nuevamente.')
         return mi_error_500(request)
+def torneo_actualizar_imagen(request, torneo_id):
+    try:
+        datosFormulario = None
+        imagenFormulario = None
+
+        if request.method == "POST":
+            datosFormulario = request.POST
+            imagenFormulario = request.FILES  # Captura la imagen subida
+
+        helper = Helper()
+        torneo = helper.obtener_torneo(torneo_id)
+
+        # Cargar la imagen actual en el formulario
+        formulario = TorneoActualizarImagenForm(
+            datosFormulario,
+            imagenFormulario,
+            initial={'imagen': torneo['imagen']}
+        )
+
+        if request.method == "POST":
+            if formulario.is_valid():
+                headers = crear_cabecera()  # Asegúrate de NO incluir Content-Type
+                
+                # Preparar la imagen para enviar
+                imagen = request.FILES.get("imagen", None)
+                archivos = None
+                if imagen:
+                    archivos = {'imagen': (imagen.name, imagen, imagen.content_type)}
+                
+                # Realizar la solicitud PATCH con la imagen
+                response = requests.patch(
+                    f'{API_BASE_URL}torneos/actualizar-imagen/{torneo_id}/',
+                    headers=headers,  # NO incluyas Content-Type aquí
+                    files=archivos
+                )
+
+
+                # Verificar la respuesta del servidor
+                if response.status_code == requests.codes.ok:
+                    messages.success(request, 'Imagen del torneo actualizada exitosamente.')
+                    return redirect("listar_torneos")
+                else:
+                    response.raise_for_status()
+            else:
+                messages.error(request, 'Error en el formulario. Revisa los errores.')
+                
+        return render(request, 'cliente/create/actualizar_imagen_torneo.html', {"formulario": formulario, "torneo": torneo})
+    except HTTPError as http_err:
+        logger.error(f'Error al actualizar la imagen del torneo: {http_err}')
+        if response.status_code == 400:
+            errores = response.json()
+            for error in errores:
+                formulario.add_error(error, errores[error])
+            messages.error(request, 'Error al actualizar la imagen del torneo. Revisa los errores.')
+            return render(request, 'cliente/create/actualizar_imagen_torneo.html', {"formulario": formulario, "torneo": torneo})
+        else:
+            return mi_error_500(request)
+    except Exception as err:
+        logger.error(f'Ocurrió un error: {err}')
+        messages.error(request, 'Ocurrió un error inesperado. Por favor, intenta nuevamente.')
+        return mi_error_500(request)
 
 def torneo_eliminar(request, torneo_id):
     try:
@@ -372,6 +433,33 @@ def torneo_eliminar(request, torneo_id):
         logger.error(f'Error al eliminar el torneo: {err}')
         messages.error(request, 'Ocurrió un error inesperado. Por favor, intenta nuevamente.')
         return mi_error_500(request)
+    
+
+def torneo_eliminar_imagen(request, torneo_id):
+    """
+    Elimina la imagen de un torneo específico.
+    """
+    try:
+        headers = crear_cabecera()  # Obtiene el token de autorización
+
+        # Realiza la solicitud DELETE para eliminar la imagen
+        response = requests.delete(
+            f'{API_BASE_URL}torneos/eliminar-imagen/{torneo_id}/',
+            headers=headers
+        )
+
+        # Si la imagen se eliminó correctamente
+        if response.status_code == requests.codes.ok:
+            messages.success(request, 'Imagen del torneo eliminada exitosamente.')
+            return redirect("listar_torneos")
+        else:
+            response.raise_for_status()  # Manejar otros errores HTTP
+
+    except Exception as err:
+        logger.error(f'Error al eliminar la imagen del torneo: {err}')
+        messages.error(request, 'Ocurrió un error inesperado. Por favor, intenta nuevamente.')
+        return mi_error_500(request)
+
 
 def crear_juego(request):
     try:
