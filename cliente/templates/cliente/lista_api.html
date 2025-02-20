@@ -12,45 +12,6 @@
                 </div>
                 <div class="card-body">
                     <p class="card-text"><strong>Descripción:</strong> {{ torneo.descripcion }}</p>
-
-                    <!-- 🔹 PARTICIPANTES -->
-                    <h6 class="mt-3">Participantes:</h6>
-                    {% if torneo.participantes %}
-                        <ul class="list-group">
-                            {% for participante in torneo.participantes %}
-                                <li class="list-group-item">
-                                    <strong>{{ participante.usuario.nombre }}</strong><br>
-                                    <small>Puntos obtenidos: {{ participante.puntos_obtenidos }}</small><br>
-                                    <small>Posición final: {{ participante.posicion_final }}</small><br>
-                                    <small>Tiempo jugado: {{ participante.tiempo_jugado }} horas</small><br>
-
-                                    <!-- Equipos -->
-                                    <small>Equipos:</small>
-                                    {% if participante.equipos %}
-                                        <ul>
-                                            {% for equipo in participante.equipos %}
-                                                <li>{{ equipo.nombre }} (Puntos: {{ equipo.puntos_contribuidos }})</li>
-                                            {% endfor %}
-                                        </ul>
-                                    {% else %}
-                                        <small>No pertenece a ningún equipo.</small>
-                                    {% endif %}
-
-                                    <!-- Botones de acción -->
-                                    <div class="mt-2">
-                                        <a href="{% url 'editar_participante' participante.id %}" class="btn btn-primary btn-sm">Editar</a>
-                                        <a href="{% url 'participante_eliminar' participante.id %}" class="btn btn-danger btn-sm"
-                                           onclick="return confirm('¿Estás seguro de que quieres eliminar este participante?');">
-                                            Eliminar
-                                        </a>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p>No hay participantes registrados.</p>
-                    {% endif %}
-
                     <!-- 🔹 JUGADORES -->
                     <h6 class="mt-3">Jugadores:</h6>
                     {% if torneo.jugadores %}
@@ -82,31 +43,6 @@
                         </ul>
                     {% else %}
                         <p>No hay jugadores registrados.</p>
-                    {% endif %}
-
-                    <!-- 🔹 JUEGOS ASOCIADOS -->
-                    <h6 class="mt-3">Juegos Asociados:</h6>
-                    {% if torneo.juegos %}
-                        <ul class="list-group">
-                            {% for juego in torneo.juegos %}
-                                <li class="list-group-item">
-                                    <strong>{{ juego.nombre }}</strong><br>
-                                    <small>Fecha: {{ juego.fecha }}</small><br>
-                                    <small>Ubicación: {{ juego.ubicacion }}</small><br>
-                                    
-                                    <!-- Botones para editar/eliminar juegos -->
-                                    <div class="mt-2">
-                                        <a href="{% url 'editar_juego' juego.id %}" class="btn btn-info btn-sm">Editar</a>
-                                        <a href="{% url 'juego_eliminar' juego.id %}" class="btn btn-danger btn-sm"
-                                           onclick="return confirm('¿Seguro que deseas eliminar este juego?');">
-                                            Eliminar
-                                        </a>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p>No hay juegos asociados a este torneo.</p>
                     {% endif %}
 
                     <!-- 🔹 BOTONES PARA EDITAR Y ELIMINAR EL TORNEO -->
