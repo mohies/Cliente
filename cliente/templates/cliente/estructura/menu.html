@@ -56,6 +56,19 @@
                     <li><a class="dropdown-item" href="{% url 'crear_participante' %}">Crear Participante</a></li>
                 </ul>
             </li>
+
+
+                <!--Menú desplegable para Jugadores -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownJugadores" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Jugadores
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownJugadores">
+                        <li><a class="dropdown-item" href="{% url 'crear_jugador' %}">Crear Jugador</a></li>
+                        <li><a class="dropdown-item" href="{% url 'listar_torneos' %}">Lista de Torneos</a></li>
+                    </ul>
+                </li>
+            </ul>
         </ul>
         <!-- Formulario de búsqueda -->
         <form class="d-flex ms-auto" method="GET" action="{% url 'torneo_busqueda_simple' %}">

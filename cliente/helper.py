@@ -1,14 +1,48 @@
 import json
+from django.shortcuts import redirect, render
 import requests
 import environ
 import os
 import xml.etree.ElementTree as ET
+import logging
+from django.contrib import messages
+from requests.exceptions import HTTPError
+logger = logging.getLogger(__name__)
+
 
 def crear_cabecera():
+    helper = Helper()
+    
+    # Si ya tenemos el token, lo usamos
+    if helper.token:
+        return {
+            'Authorization': f'Bearer {helper.token}',
+            'Content-Type': 'application/json'
+        }
+    
+    # Si no hay token, obtenemos uno nuevo
+    token_url = f'{API_BASE_TOKEN}oauth2/token/'
+    datos = {
+        'grant_type': 'password',
+        'username': 'admin',  
+        'password': 'admin',  
+        'client_id': 'pepeid',
+        'client_secret': 'pepesecreto',
+    }
+
+    # Solicitamos el token directamente
+    response = requests.post(token_url, data=datos)
+    
+    # Solo manejamos el caso exitoso (200)
+    token = response.json().get('access_token')
+    helper.token = token  # Guardamos el token para futuras peticiones
+    
     return {
-        'Authorization': 'Bearer PUHJyMz5miDrM6vYCQK6gd7LQxeuMf',
+        'Authorization': f'Bearer {token}',
         'Content-Type': 'application/json'
     }
+
+
 
 env = environ.Env()
 
@@ -20,8 +54,13 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 API_VERSION = env("API_VERSION", default="v1") 
 API_BASE_URL = f'http://127.0.0.1:8000/api/{API_VERSION}/'
+API_BASE_TOKEN = f'http://127.0.0.1:8000/'
 
 class Helper:
+    
+    token = None
+    
+    
     def obtener_participantes_select(self):
         headers = crear_cabecera()
         response = requests.get(f'{API_BASE_URL}participantes/', headers=headers)
@@ -134,142 +173,97 @@ class Helper:
         if response.status_code == 200:
             return response.json()
         return None  # Devuelve None si falla la petición
-
-    def obtener_torneos(self):
+    
+    def realizar_peticion(self, metodo, url, datos=None, archivos=None, request=None):
+        """
+        Método genérico para realizar peticiones HTTP, manejar errores y mostrar mensajes de éxito.
+        """
         headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}torneos/mejorada/', headers=headers)
-        return self.process_response(response)
+        try:
+            if metodo == 'GET':
+                response = requests.get(url, headers=headers)
+            elif metodo == 'POST':
+                response = requests.post(url, headers=headers, data=json.dumps(datos))
+            elif metodo == 'PUT':
+                response = requests.put(url, headers=headers, data=json.dumps(datos))
+            elif metodo == 'PATCH':
+                response = requests.patch(url, headers=headers, data=json.dumps(datos))
+            elif metodo == 'DELETE':
+                response = requests.delete(url, headers=headers)
+            elif metodo == 'PATCH-FILE':
+                response = requests.patch(url, headers=headers, files=archivos)
+            else:
+                raise ValueError("Método HTTP no soportado.")
+            
+            response.raise_for_status()  # Lanza excepción para errores HTTP
+            return response
+        
+        except HTTPError as http_err:
+            # 👉 Ahora mostramos el detalle de la respuesta
+            if http_err.response is not None:
+                try:
+                    errores_json = http_err.response.json()
+                    logger.error(f'Error HTTP {http_err.response.status_code}: {errores_json}')
+                except ValueError:
+                    logger.error(f'Error HTTP {http_err.response.status_code}: {http_err.response.text}')
+            else:
+                logger.error(f'Error HTTP sin respuesta: {http_err}')
+            
+            # ✅ Devolvemos la respuesta para que `procesar_respuesta()` lo maneje
+            return http_err.response
+        
+        except (ConnectionError, requests.Timeout) as conn_err:
+            # ✅ Ahora manejamos `ConnectionError` y `Timeout` correctamente
+            logger.error(f'Error de conexión o timeout: {conn_err}')
+            if requests.request:
+                messages.error(requests.request, 'Error de conexión. Intenta más tarde.')
+                # 👉 Redirige automáticamente a `mi_error_500`
+                return redirect('mi_error_500')
+        
+        except Exception as err:
+            logger.error(f'Error inesperado: {err}')
+            return redirect('mi_error_500')
 
-    def obtener_participantes(self):
-        headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}participantes/mejorada/', headers=headers)
-        return self.process_response(response)
-
-    def obtener_juegos(self):
-        headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}juegos/mejorada/', headers=headers)
-        return self.process_response(response)
-
-    def obtener_equipos(self):
-        headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}equipos/', headers=headers)
-        return self.process_response(response)
-
-    def buscar_torneos(self, texto_busqueda):
-        headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}torneos/buscar/', headers=headers, params={'textoBusqueda': texto_busqueda})
-        return self.process_response(response)
-
-    def buscar_torneos_avanzado(self, params):
-        headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}torneos/buscar/avanzado/', headers=headers, params=params)
-        return self.process_response(response)
-
-    def buscar_equipos_avanzado(self, params):
-        headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}equipos/buscar/avanzado/', headers=headers, params=params)
-        return self.process_response(response)
-
-    def buscar_participantes_avanzado(self, params):
-        headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}participantes/buscar/avanzado/', headers=headers, params=params)
-        return self.process_response(response)
-
-    def buscar_juegos_avanzado(self, params):
-        headers = crear_cabecera()
-        response = requests.get(f'{API_BASE_URL}juegos/buscar/avanzado/', headers=headers, params=params)
-        return self.process_response(response)
-
-    def crear_torneo(self, datos):
-        headers = crear_cabecera()
-        response = requests.post(f'{API_BASE_URL}torneos/crear/', headers=headers, data=json.dumps(datos))
-        self.check_response_status(response)
-
-    def editar_torneo(self, torneo_id, datos):
-        headers = crear_cabecera()
-        response = requests.put(f'{API_BASE_URL}torneos/editar/{torneo_id}/', headers=headers, data=json.dumps(datos))
-        self.check_response_status(response)
-
-    def actualizar_nombre_torneo(self, torneo_id, datos):
-        headers = crear_cabecera()
-        response = requests.patch(f'{API_BASE_URL}torneos/actualizar-nombre/{torneo_id}/', headers=headers, data=json.dumps(datos))
-        self.check_response_status(response)
-
-    def eliminar_torneo(self, torneo_id):
-        headers = crear_cabecera()
-        response = requests.delete(f'{API_BASE_URL}torneos/eliminar/{torneo_id}/', headers=headers)
-        self.check_response_status(response)
-
-    def crear_juego(self, datos):
-        headers = crear_cabecera()
-        response = requests.post(f'{API_BASE_URL}juegos/crear/', headers=headers, data=json.dumps(datos))
-        self.check_response_status(response)
-
-    def editar_juego(self, juego_id, datos):
-        headers = crear_cabecera()
-        response = requests.put(f'{API_BASE_URL}juegos/editar/{juego_id}/', headers=headers, data=json.dumps(datos))
-        self.check_response_status(response)
-
-    def actualizar_nombre_juego(self, juego_id, datos):
-        headers = crear_cabecera()
-        response = requests.patch(f'{API_BASE_URL}juegos/actualizar-nombre/{juego_id}/', headers=headers, data=json.dumps(datos))
-        self.check_response_status(response)
-
-    def eliminar_juego(self, juego_id):
-        headers = crear_cabecera()
-        response = requests.delete(f'{API_BASE_URL}juegos/eliminar/{juego_id}/', headers=headers)
-        self.check_response_status(response)
-
-    def crear_participante(self, datos):
-        headers = crear_cabecera()
-        response = requests.post(f'{API_BASE_URL}participantes/crear/', headers=headers, data=json.dumps(datos))
-        self.check_response_status(response)
-
-    def editar_participante(self, participante_id, datos):
-        headers = crear_cabecera()
-        response = requests.put(f'{API_BASE_URL}participantes/editar/{participante_id}/', headers=headers, data=json.dumps(datos))
-        self.check_response_status(response)
-
-    def actualizar_equipos_participante(self, participante_id, datos):
-        headers = crear_cabecera()
-        response = requests.patch(f'{API_BASE_URL}participantes/actualizar-equipos/{participante_id}/', headers=headers, data=json.dumps(datos))
-        self.check_response_status(response)
-
-    def eliminar_participante(self, participante_id):
-        headers = crear_cabecera()
-        response = requests.delete(f'{API_BASE_URL}participantes/eliminar/{participante_id}/', headers=headers)
-        self.check_response_status(response)
-
-    def crear_jugador(self, datos):
-        headers = crear_cabecera()
-        response = requests.post(f'{API_BASE_URL}jugadores/crear/', headers=headers, data=json.dumps(datos))
-        self.check_response_status(response)
-
-    def editar_jugador(self, jugador_id, datos):
-        headers = crear_cabecera()
-        response = requests.put(f'{API_BASE_URL}jugadores/editar/{jugador_id}/', headers=headers, data=json.dumps(datos))
-        self.check_response_status(response)
-
-    def actualizar_puntos_jugador(self, jugador_id, datos):
-        headers = crear_cabecera()
-        response = requests.patch(f'{API_BASE_URL}jugadores/actualizar_puntos/{jugador_id}/', headers=headers, data=json.dumps(datos))
-        self.check_response_status(response)
-
-    def eliminar_relacion_jugador_torneo(self, jugador_id, torneo_id):
-        headers = crear_cabecera()
-        response = requests.delete(f'{API_BASE_URL}jugadores/eliminar/{jugador_id}/{torneo_id}/', headers=headers)
-        self.check_response_status(response)
-
-    def process_response(self, response):
-        if response.headers['Content-Type'] == 'application/json':
-            return response.json()
-        elif response.headers['Content-Type'] == 'application/xml':
-            return ET.fromstring(response.content)
+    def procesar_respuesta(self, request, response, formulario=None, exito_msg="Operación exitosa.", redirect_url="index"):
+        """
+        Procesa la respuesta y maneja errores.
+        """
+        if response.status_code in [200, 201]:
+            messages.success(request, exito_msg)
+            return redirect(redirect_url)
+        
+        elif response.status_code == 400:
+            errores = response.json()
+            if formulario:
+                for campo, mensaje in errores.items():
+                    formulario.add_error(campo, mensaje)
+            messages.error(request, 'Error en los datos proporcionados. Revisa los campos.')
+            return None
+        
+        elif response.status_code == 404:
+            logger.error('Error 404: Recurso no encontrado.')
+            messages.error(request, 'Recurso no encontrado.')
+            return redirect('mi_error_404')
+        
+        elif response.status_code == 500:
+            logger.error(f'Error 500: {response.text}')
+            messages.error(request, 'Ocurrió un error en el servidor. Intenta más tarde.')
+            return redirect('mi_error_500')
+        
         else:
-            raise ValueError('Unsupported content type: {}'.format(response.headers['Content-Type']))
+            logger.error(f'Error desconocido: {response.status_code} - {response.text}')
+            messages.error(request, 'Ocurrió un error inesperado. Intenta nuevamente.')
+            return redirect('mi_error_500')
+def tratar_errores(request,codigo):
+    if codigo == 404:
+        return mi_error_404(request)
+    else:
+        return mi_error_500(request)
+        
+#Páginas de Error
+def mi_error_404(request,exception=None):
+    return render(request, 'cliente/errores/404.html',None,None,404)
 
-    def check_response_status(self, response):
-        if response.status_code not in [200, 201, 204]:
-            if response.status_code == 400:
-                raise ValueError(f"Bad Request: {response.json()}")
-            response.raise_for_status()
+#Páginas de Error
+def mi_error_500(request,exception=None):
+    return render(request, 'cliente/errores/500.html',None,None,500)
