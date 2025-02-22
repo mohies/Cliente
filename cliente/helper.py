@@ -9,7 +9,20 @@ from django.contrib import messages
 from requests.exceptions import HTTPError
 logger = logging.getLogger(__name__)
 
-
+def process_response(response):
+    # Verifica si el tipo de contenido es 'application/json'
+    if response.headers['Content-Type'] == 'application/json':
+        # Si es JSON, convierte el contenido de la respuesta a un objeto Python (como un diccionario o lista)
+        return response.json()
+    
+    # Verifica si el tipo de contenido es 'application/xml'
+    elif response.headers['Content-Type'] == 'application/xml':
+        # Si es XML, convierte el contenido de la respuesta en un árbol de elementos XML usando ElementTree
+        return ET.fromstring(response.content)
+    
+    # Si el tipo de contenido no es ni JSON ni XML, lanza un error
+    else:
+        raise ValueError('Unsupported content type: {}'.format(response.headers['Content-Type']))
 def crear_cabecera():
     helper = Helper()
     
@@ -59,7 +72,6 @@ API_BASE_TOKEN = f'http://127.0.0.1:8000/'
 class Helper:
     
     token = None
-    
     
     def obtener_participantes_select(self):
         headers = crear_cabecera()
@@ -174,14 +186,25 @@ class Helper:
             return response.json()
         return None  # Devuelve None si falla la petición
     
-    def realizar_peticion(self, metodo, url, datos=None, archivos=None, request=None):
+   
+   
+    """
+    Incluir mensajes en la aplicación de cliente, para indicar que se ha realizado cada operación correctamente (1 punto)
+    Controlar correctamente los errores tanto en cliente como en la API, para que aparezca por consola siempre el error que se produce, pero por la aplicación 
+    te rediriga a las páginas de errores correspondiente(1 punto)
+    Refactorizar el código, para que sólo se controle errores, se hagan las peticiones y se gestionen las respuesta desde la clase helper(1 punto)"""
+    
+    
+    def realizar_peticion(self, metodo, url, datos=None, params=None, archivos=None, request=None):
         """
         Método genérico para realizar peticiones HTTP, manejar errores y mostrar mensajes de éxito.
         """
-        headers = crear_cabecera()
+        headers = crear_cabecera()  # Obtiene el token automáticamente
+
         try:
+
             if metodo == 'GET':
-                response = requests.get(url, headers=headers)
+                response = requests.get(url, headers=headers, params=params)
             elif metodo == 'POST':
                 response = requests.post(url, headers=headers, data=json.dumps(datos))
             elif metodo == 'PUT':
@@ -190,8 +213,8 @@ class Helper:
                 response = requests.patch(url, headers=headers, data=json.dumps(datos))
             elif metodo == 'DELETE':
                 response = requests.delete(url, headers=headers)
-            elif metodo == 'PATCH-FILE':
-                response = requests.patch(url, headers=headers, files=archivos)
+            elif metodo == 'PATCH-FILE':         
+                response = requests.patch(url, files=archivos) # Le quitamos el header porque no es necesario en este caso ya que sobrescribe el contenttype que requests ha establecido y lo intentara leer el header como texto JSON
             else:
                 raise ValueError("Método HTTP no soportado.")
             
@@ -199,7 +222,7 @@ class Helper:
             return response
         
         except HTTPError as http_err:
-            # 👉 Ahora mostramos el detalle de la respuesta
+            # 🔥 Ahora mostramos el detalle de la respuesta
             if http_err.response is not None:
                 try:
                     errores_json = http_err.response.json()
@@ -209,51 +232,67 @@ class Helper:
             else:
                 logger.error(f'Error HTTP sin respuesta: {http_err}')
             
-            # ✅ Devolvemos la respuesta para que `procesar_respuesta()` lo maneje
+            # 🔥 Devolvemos la respuesta para que `procesar_respuesta()` lo maneje
             return http_err.response
         
         except (ConnectionError, requests.Timeout) as conn_err:
-            # ✅ Ahora manejamos `ConnectionError` y `Timeout` correctamente
             logger.error(f'Error de conexión o timeout: {conn_err}')
             if requests.request:
                 messages.error(requests.request, 'Error de conexión. Intenta más tarde.')
-                # 👉 Redirige automáticamente a `mi_error_500`
-                return redirect('mi_error_500')
+                return mi_error_500(request)
         
         except Exception as err:
             logger.error(f'Error inesperado: {err}')
-            return redirect('mi_error_500')
+            return mi_error_500(request)
+
 
     def procesar_respuesta(self, request, response, formulario=None, exito_msg="Operación exitosa.", redirect_url="index"):
-        """
-        Procesa la respuesta y maneja errores.
-        """
         if response.status_code in [200, 201]:
             messages.success(request, exito_msg)
             return redirect(redirect_url)
         
         elif response.status_code == 400:
             errores = response.json()
+
+            # Verificación específica para "El torneo no tiene una imagen asignada"
+            if errores.get('error') == "El torneo no tiene una imagen asignada":
+                messages.warning(request, "El torneo no tiene una imagen asignada.")
+                return redirect(redirect_url)
+            
+            # Si el error es diferente, aplica el manejo genérico
             if formulario:
                 for campo, mensaje in errores.items():
                     formulario.add_error(campo, mensaje)
+                    
             messages.error(request, 'Error en los datos proporcionados. Revisa los campos.')
             return None
         
         elif response.status_code == 404:
             logger.error('Error 404: Recurso no encontrado.')
             messages.error(request, 'Recurso no encontrado.')
-            return redirect('mi_error_404')
+            return mi_error_404(request)
         
         elif response.status_code == 500:
             logger.error(f'Error 500: {response.text}')
             messages.error(request, 'Ocurrió un error en el servidor. Intenta más tarde.')
-            return redirect('mi_error_500')
+            return mi_error_500(request)
         
         else:
             logger.error(f'Error desconocido: {response.status_code} - {response.text}')
             messages.error(request, 'Ocurrió un error inesperado. Intenta nuevamente.')
-            return redirect('mi_error_500')
+            return mi_error_500(request)
+
+        
+    def manejar_error_400(self, response, formulario, template_name, request):
+        """
+        Centraliza el manejo de errores 400 en la aplicación.
+        """
+        errores = process_response(response)
+        for campo, mensaje in errores.items():
+            formulario.add_error(campo, mensaje)
+        
+        return render(request, template_name, {"formulario": formulario, "errores": errores})
+        
 def tratar_errores(request,codigo):
     if codigo == 404:
         return mi_error_404(request)
@@ -267,3 +306,6 @@ def mi_error_404(request,exception=None):
 #Páginas de Error
 def mi_error_500(request,exception=None):
     return render(request, 'cliente/errores/500.html',None,None,500)
+
+
+    
