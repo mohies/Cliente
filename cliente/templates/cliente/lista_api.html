@@ -13,7 +13,6 @@
                 <div class="card-body">
                     <p class="card-text"><strong>Descripción:</strong> {{ torneo.descripcion }}</p>
 
-                    <!-- 🔹 IMAGEN DEL TORNEO -->
                     <h6 class="mt-3">Imagen del Torneo:</h6>
                     {% if torneo.imagen %}
                         <img src="{{ torneo.imagen.url }}" alt="Imagen del Torneo" class="img-fluid mb-3" style="max-height: 200px;">
@@ -21,7 +20,6 @@
                         <p>No hay imagen asignada.</p>
                     {% endif %}
 
-                    <!-- 🔹 JUGADORES -->
                     <h6 class="mt-3">Jugadores:</h6>
                     {% if torneo.jugadores %}
                         <ul class="list-group">
@@ -54,7 +52,7 @@
                         <p>No hay jugadores registrados.</p>
                     {% endif %}
 
-                    <!-- 🔹 BOTONES PARA EDITAR Y ELIMINAR EL TORNEO -->
+                    <!--  BOTONES PARA EDITAR Y ELIMINAR EL TORNEO -->
                     <div class="mt-4 d-flex justify-content-end">
                         <a href="{% url 'torneo_editar_nombre' torneo.id %}" class="btn btn-warning me-2">Editar Nombre</a>
                         <a href="{% url 'editar_torneo' torneo.id %}" class="btn btn-primary me-2">Editar Torneo</a>
@@ -63,7 +61,7 @@
                             Eliminar
                         </a>
 
-                        <!-- 🔹 BOTONES PARA EDITAR Y ELIMINAR IMAGEN -->
+                        <!--  BOTONES PARA EDITAR Y ELIMINAR IMAGEN -->
                         <a href="{% url 'torneo_actualizar_imagen' torneo.id %}" class="btn btn-info me-2">
                             Editar Imagen
                         </a>

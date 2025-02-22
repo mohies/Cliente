@@ -59,48 +59,58 @@ def process_response(response):
         raise ValueError('Unsupported content type: {}'.format(response.headers['Content-Type']))
 
 def torneos_lista_api(request):
-    try:
-        headers = {'Authorization': f'Bearer {USER_KEY_ADMINISTRADOR}'}
-        response = requests.get(f'{API_BASE_URL}torneos/mejorada/', headers=headers)
-        torneos = process_response(response)
-        return render(request, 'cliente/lista_api.html', {"torneos_mostrar": torneos})
-    except Exception as err:
-        logger.error(f'Error al obtener la lista de torneos: {err}')
-        return mi_error_500(request)
+    helper = Helper()  # Instanciamos el Helper
+    
+    response = helper.realizar_peticion(
+        metodo='GET',
+        url=f'{API_BASE_URL}torneos/mejorada/',
+        request=request
+    )
+
+    torneos = response.json()
+    
+    return render(request, 'cliente/lista_api.html', {"torneos_mostrar": torneos})
 
 def participantes_lista_api(request):
-    try:
-        headers = {'Authorization': f'Bearer {USER_KEY_JUGADOR}'}
-        response = requests.get(f'{API_BASE_URL}participantes/mejorada/', headers=headers)
-        participantes = process_response(response)
-        return render(request, 'cliente/lista_participantes.html', {"participantes_mostrar": participantes})
-    except Exception as err:
-        logger.error(f'Error al obtener la lista de participantes: {err}')
-        return mi_error_500(request)
+    helper = Helper()  # Instanciamos el Helper
+    
+    response = helper.realizar_peticion(
+        metodo='GET',
+        url=f'{API_BASE_URL}participantes/mejorada/',
+        request=request
+    )
+
+    participantes = response.json()
+    
+    return render(request, 'cliente/lista_participantes.html', {"participantes_mostrar": participantes})
 
 def juegos_lista_api(request):
-    try:
-        headers = {'Authorization': f'Bearer {USER_KEY_ORGANIZADOR}'}
-        response = requests.get(f'{API_BASE_URL}juegos/mejorada/', headers=headers)
-        juegos = process_response(response)
-        return render(request, 'cliente/lista_juegos.html', {"juegos_mostrar": juegos})
-    except Exception as err:
-        logger.error(f'Error al obtener la lista de juegos: {err}')
-        return mi_error_500(request)
+    helper = Helper()  # Instanciamos el Helper
+    
+    response = helper.realizar_peticion(
+        metodo='GET',
+        url=f'{API_BASE_URL}juegos/mejorada/',
+        request=request
+    )
+
+    juegos = response.json()
+    
+    return render(request, 'cliente/lista_juegos.html', {"juegos_mostrar": juegos})
+
 
 def equipos_lista_api(request):
-    try:
-        access_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM4MTk4Nzc3LCJpYXQiOjE3MzgxOTg0NzcsImp0aSI6ImNmM2ZiMjcwOWYxNDRiNTg4NjAwYTcxYjA0NWZmZWQ3IiwidXNlcl9pZCI6Mn0.-gGn8ViwXz6rhXkchXiJJ4j3mqFNwJwMvJyvqhUIqpY'
-        headers = {'Authorization': f'Bearer {access_token}'}
-        response = requests.get(f'{API_BASE_URL}equipos/', headers=headers)
-        if response.status_code == 200:
-            equipos = process_response(response)
-            return render(request, 'cliente/lista_equipos.html', {"equipos_mostrar": equipos})
-        else:
-            response.raise_for_status()
-    except Exception as err:
-        logger.error(f'Error al obtener la lista de equipos: {err}')
-        return mi_error_500(request)
+    helper = Helper()  # Instanciamos el Helper
+    
+    response = helper.realizar_peticion(
+        metodo='GET',
+        url=f'{API_BASE_URL}equipos/',
+        request=request
+    )
+
+    equipos = response.json()
+    
+    return render(request, 'cliente/lista_equipos.html', {"equipos_mostrar": equipos})
+
 
 def torneo_busqueda_simple(request):
     try:
@@ -122,101 +132,112 @@ def torneo_busqueda_simple(request):
         logger.error(f'Error en la búsqueda simple de torneos: {err}')
         return mi_error_500(request)
 
+
 def torneo_busqueda_avanzada(request):
-    try:
-        formulario = BusquedaAvanzadaTorneoForm(request.GET)
-        if request.GET:
-            headers = crear_cabecera()
-            params = {
-                'textoBusqueda': request.GET.get('textoBusqueda', ''),
-                'fecha_desde': request.GET.get('fecha_desde', None),
-                'fecha_hasta': request.GET.get('fecha_hasta', None),
-            }
-            response = requests.get(
-                f'{API_BASE_URL}torneos/buscar/avanzado/',
-                headers=headers,
-                params=params
-            )
-            torneos = process_response(response)
-            return render(request, 'cliente/lista_api.html', {"torneos_mostrar": torneos})
-        return render(request, 'cliente/busqueda_avanzada.html', {"formulario": formulario})
-    except Exception as err:
-        logger.error(f'Error en la búsqueda avanzada de torneos: {err}')
-        return mi_error_500(request)
+    helper = Helper()  # 🔥 Instanciamos el Helper
+    formulario = BusquedaAvanzadaTorneoForm(request.GET or None)
+    
+    if formulario.is_valid():
+        params = formulario.cleaned_data
+    
+        response = helper.realizar_peticion(
+            metodo='GET',
+            url=f'{API_BASE_URL}torneos/buscar/avanzado/',
+            params=params,  # ✅ ¡Aquí está el cambio!
+            request=request
+        )
 
-@api_view(['GET'])
+        torneos = process_response(response)
+        return render(request, 'cliente/lista_api.html', {"torneos_mostrar": torneos})
+    
+    return render(request, 'cliente/busqueda_avanzada.html', {"formulario": formulario})
+
+
+
 def equipo_busqueda_avanzada(request):
-    try:
-        if len(request.GET) > 0:
-            formulario = BusquedaAvanzadaEquipoForm(request.GET)
-            if formulario.is_valid():
-                headers = crear_cabecera()
-                response = requests.get(
-                    f'{API_BASE_URL}equipos/buscar/avanzado/',
-                    headers=headers,
-                    params=formulario.cleaned_data
-                )
-                if response.status_code == requests.codes.ok:
-                    equipos = process_response(response)
-                    return render(request, 'cliente/lista_equipos.html', {"equipos_mostrar": equipos})
-                else:
-                    response.raise_for_status()
-            else:
-                return render(request, 'cliente/busqueda_avanzada_equipo.html', {"formulario": formulario})
-        else:
-            formulario = BusquedaAvanzadaEquipoForm(None)
-        return render(request, 'cliente/busqueda_avanzada_equipo.html', {"formulario": formulario})
-    except Exception as err:
-        logger.error(f'Error en la búsqueda avanzada de equipos: {err}')
-        return mi_error_500(request)
+    helper = Helper()  
+    formulario = BusquedaAvanzadaEquipoForm(request.GET or None)
 
-@api_view(['GET'])
+    if formulario.is_valid():
+        params = formulario.cleaned_data
+        
+        response = helper.realizar_peticion(
+            metodo='GET',
+            url=f'{API_BASE_URL}equipos/buscar/avanzado/',
+            params=params,
+            request=request
+        )
+
+        if response.status_code == requests.codes.ok:
+            equipos = process_response(response)
+            return render(request, 'cliente/lista_equipos.html', {"equipos_mostrar": equipos})
+
+        if response.status_code == 400:
+            return helper.manejar_error_400(response, formulario, 'cliente/busqueda_avanzada_equipo.html', request)
+
+        return tratar_errores(request, response.status_code)
+
+    return render(request, 'cliente/busqueda_avanzada_equipo.html', {"formulario": formulario})
+
 def participante_busqueda_avanzada(request):
-    try:
-        if len(request.GET) > 0:
-            formulario = BusquedaAvanzadaParticipanteForm(request.GET)
-            headers = crear_cabecera()
-            response = requests.get(
-                f'{API_BASE_URL}participantes/buscar/avanzado/',
-                headers=headers,
-                params=formulario.data
-            )
-            if response.status_code == requests.codes.ok:
-                participantes = process_response(response)
-                return render(request, 'cliente/lista_participantes.html', {"participantes_mostrar": participantes})
-            else:
-                response.raise_for_status()
-        else:
-            formulario = BusquedaAvanzadaParticipanteForm(None)
-        return render(request, 'cliente/busqueda_avanzada_participante.html', {"formulario": formulario})
-    except Exception as err:
-        logger.error(f'Error en la búsqueda avanzada de participantes: {err}')
-        return mi_error_500(request)
+    helper = Helper()  
+    formulario = BusquedaAvanzadaParticipanteForm(request.GET or None)
 
-@api_view(['GET'])
+    if formulario.is_valid():
+        params = formulario.cleaned_data
+        
+        response = helper.realizar_peticion(
+            metodo='GET',
+            url=f'{API_BASE_URL}participantes/buscar/avanzado/',
+            params=params,
+            request=request
+        )
+
+        if response.status_code == requests.codes.ok:
+            participantes = process_response(response)
+            return render(request, 'cliente/lista_participantes.html', {"participantes_mostrar": participantes})
+
+        if response.status_code == 400:
+            return helper.manejar_error_400(response, formulario, 'cliente/busqueda_avanzada_participante.html', request)
+
+        return tratar_errores(request, response.status_code)
+
+    return render(request, 'cliente/busqueda_avanzada_participante.html', {"formulario": formulario})
+
+
 def juego_busqueda_avanzada(request):
-    try:
-        if len(request.GET) > 0:
-            formulario = BusquedaAvanzadaJuegoForm(request.GET)
-            headers = crear_cabecera()
-            response = requests.get(
-                f'{API_BASE_URL}juegos/buscar/avanzado/',
-                headers=headers,
-                params=formulario.data
-            )
-            if response.status_code == requests.codes.ok:
-                juegos = process_response(response)
-                return render(request, 'cliente/lista_juegos.html', {"juegos_mostrar": juegos})
-            else:
-                response.raise_for_status()
-        else:
-            formulario = BusquedaAvanzadaJuegoForm(None)
-        return render(request, 'cliente/busqueda_avanzada_juego.html', {"formulario": formulario})
-    except Exception as err:
-        logger.error(f'Error en la búsqueda avanzada de juegos: {err}')
-        return mi_error_500(request)
+    helper = Helper()  
+    formulario = BusquedaAvanzadaJuegoForm(request.GET or None)
+
+    if formulario.is_valid():
+        params = formulario.cleaned_data
+        
+        response = helper.realizar_peticion(
+            metodo='GET',
+            url=f'{API_BASE_URL}juegos/buscar/avanzado/',
+            params=params,
+            request=request
+        )
+
+        if response.status_code == requests.codes.ok:
+            juegos = process_response(response)
+            return render(request, 'cliente/lista_juegos.html', {"juegos_mostrar": juegos})
+
+        if response.status_code == 400:
+            return helper.manejar_error_400(response, formulario, 'cliente/busqueda_avanzada_juego.html', request)
+
+        return tratar_errores(request, response.status_code)
+
+    return render(request, 'cliente/busqueda_avanzada_juego.html', {"formulario": formulario})
 
 
+"""
+    Realizar las operaciones de POST, PUT, PATCH y DELETE de un modelo, con sus validaciones(al menos 3 campos), control de errores y respuestas.
+    (1 punto ,0,25:POST, 0,25: PUT, 0,25:PATCH, 0,25-DELETE)
+    
+    Incluir en la aplicación algún modelo(Puede repetirse con alguno de los anteriores) un campo que sea un archivo, y 
+    gestionar las peticiones GET, POST, PUT, PATCH y DELETE de ese campo(1 punto)
+"""
 def crear_torneo(request):
     helper = Helper()  # Instanciamos el Helper
     
@@ -244,19 +265,14 @@ def crear_torneo(request):
                 url=f'{API_BASE_URL}torneos/crear/',
                 datos=datos,
                 request=request
-            )     
-
-         
+            )       
             resultado = helper.procesar_respuesta(request, response, formulario, "Torneo creado exitosamente.", "index")
-            
             if resultado:
                 return resultado
-        
     else:
         formulario = TorneoForm()
     
     return render(request, 'cliente/create/crear_torneo.html', {"formulario": formulario})
-
 
 
 def editar_torneo(request, torneo_id):
@@ -306,7 +322,6 @@ def editar_torneo(request, torneo_id):
     return render(request, 'cliente/create/editar_torneo.html', {"formulario": formulario, "torneo": torneo})
 
 
-
 def torneo_editar_nombre(request, torneo_id):
     helper = Helper()
     response = helper.realizar_peticion('GET', f'{API_BASE_URL}torneos/{torneo_id}/', request=request)
@@ -339,15 +354,21 @@ def torneo_editar_nombre(request, torneo_id):
 
 def torneo_actualizar_imagen(request, torneo_id):
     helper = Helper()
-    response = helper.realizar_peticion('GET', f'{API_BASE_URL}torneos/{torneo_id}/', request=request)
+    response = helper.realizar_peticion(
+        metodo='GET', 
+        url=f'{API_BASE_URL}torneos/{torneo_id}/', 
+        request=request
+    )
+    
     torneo = response.json()
+    imagen = torneo.get('imagen', None)
     
     if request.method == "POST":
         formulario = TorneoActualizarImagenForm(request.POST, request.FILES)
         
         if formulario.is_valid():
             imagen = request.FILES.get("imagen", None)
-            archivos = {'imagen': (imagen.name, imagen, imagen.content_type)} if imagen else None
+            archivos = imagen and {"imagen": imagen}
             
             response = helper.realizar_peticion(
                 metodo='PATCH-FILE',
@@ -356,15 +377,27 @@ def torneo_actualizar_imagen(request, torneo_id):
                 request=request
             )
             
-            resultado = helper.procesar_respuesta(request, response, formulario, "Imagen del torneo actualizada exitosamente.", "listar_torneos")
+            resultado = helper.procesar_respuesta(
+                request, 
+                response, 
+                formulario, 
+                "Imagen del torneo actualizada exitosamente.", 
+                "listar_torneos"
+            )
             
             if resultado:
                 return resultado
         
     else:
-        formulario = TorneoActualizarImagenForm(initial={'imagen': torneo['imagen']})
+        formulario = TorneoActualizarImagenForm(initial={'imagen': imagen})
     
-    return render(request, 'cliente/create/actualizar_imagen_torneo.html', {"formulario": formulario, "torneo": torneo})
+    return render(
+        request, 
+        'cliente/create/actualizar_imagen_torneo.html', 
+        {"formulario": formulario, "torneo": torneo}
+    )
+
+
 
 
 def torneo_eliminar(request, torneo_id):
@@ -382,29 +415,26 @@ def torneo_eliminar(request, torneo_id):
         return resultado
 
     
-
 def torneo_eliminar_imagen(request, torneo_id):
     helper = Helper()
-    
     response = helper.realizar_peticion(
         metodo='DELETE',
         url=f'{API_BASE_URL}torneos/eliminar-imagen/{torneo_id}/',
         request=request
     )
     
-    resultado = helper.procesar_respuesta(
+    return helper.procesar_respuesta(
         request, 
         response, 
         exito_msg="Imagen del torneo eliminada exitosamente.", 
         redirect_url="listar_torneos"
     )
-    
-    if resultado:
-        return resultado
-    
-    return mi_error_500(request)
 
 
+"""
+    Realizar las operaciones de POST, PUT, PATCH y DELETE de un modelo con relaciones ManyToOne con sus validaciones(al menos 3 campos), 
+    control de errores y respuestas.(1 punto ,0,25:POST, 0,25: PUT, 0,25:PATCH, 0,25-DELETE)
+"""
 
 def crear_juego(request):
     helper = Helper()  
@@ -524,6 +554,11 @@ def juego_eliminar(request, juego_id):
     
     return redirect('mi_error_500')
 
+
+"""
+  Realizar las operaciones de POST, PUT, PATCH y DELETE de un modelo con una relacion ManyToMany distinto al anterior,con sus validaciones
+  (al menos 3 campos), control de errores y respuestas.(1 punto ,0,25:POST, 0,25: PUT, 0,25:PATCH, 0,25-DELETE)
+"""
 def crear_participante(request):
     helper = Helper()
 
@@ -659,7 +694,10 @@ def participante_eliminar(request, participante_id):
     
     return mi_error_500(request)
 
-
+"""
+Realizar las operaciones de POST, PUT, PATCH y DELETE de un modelo con relaciones ManyToMany con tabla intermedia distinto al anterior, 
+con sus validaciones(al menos 3 campos), control de errores y respuestas.(1 punto ,0,25:POST, 0,25: PUT, 0,25:PATCH, 0,25-DELETE)
+"""
 def crear_jugador(request):
     helper = Helper()  
     
