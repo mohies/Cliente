@@ -66,8 +66,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 API_VERSION = env("API_VERSION", default="v1") 
-API_BASE_URL = f'http://127.0.0.1:8000/api/{API_VERSION}/'
-API_BASE_TOKEN = f'http://127.0.0.1:8000/'
+API_BASE_URL = f'https://mohbenbou.pythonanywhere.com/api/{API_VERSION}/'
+API_BASE_TOKEN = f'https://mohbenbou.pythonanywhere.com/'
 
 class Helper:
     
@@ -222,7 +222,7 @@ class Helper:
             return response
         
         except HTTPError as http_err:
-            # 🔥 Ahora mostramos el detalle de la respuesta
+            #   mostramos el detalle de la respuesta
             if http_err.response is not None:
                 try:
                     errores_json = http_err.response.json()
@@ -232,7 +232,7 @@ class Helper:
             else:
                 logger.error(f'Error HTTP sin respuesta: {http_err}')
             
-            # 🔥 Devolvemos la respuesta para que `procesar_respuesta()` lo maneje
+       
             return http_err.response
         
         except (ConnectionError, requests.Timeout) as conn_err:
@@ -254,7 +254,7 @@ class Helper:
         elif response.status_code == 400:
             errores = response.json()
 
-            # Verificación específica para "El torneo no tiene una imagen asignada"
+            # Manejo de errores específicos
             if errores.get('error') == "El torneo no tiene una imagen asignada":
                 messages.warning(request, "El torneo no tiene una imagen asignada.")
                 return redirect(redirect_url)
@@ -266,7 +266,7 @@ class Helper:
                     
             messages.error(request, 'Error en los datos proporcionados. Revisa los campos.')
             return None
-        
+        # Manejo de errores 404, 500 y otros y el logueo de los errores
         elif response.status_code == 404:
             logger.error('Error 404: Recurso no encontrado.')
             messages.error(request, 'Recurso no encontrado.')

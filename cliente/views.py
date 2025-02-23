@@ -22,10 +22,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Carga las variables del archivo .env
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-USER_KEY_ADMINISTRADOR = env("USER_KEY_ADMINISTRADOR")
-USER_KEY_JUGADOR = env("USER_KEY_JUGADOR")
-USER_KEY_ORGANIZADOR = env("USER_KEY_ORGANIZADOR")
-print(USER_KEY_ADMINISTRADOR)
 
 # Configurar el logger
 logger = logging.getLogger(__name__)
@@ -38,7 +34,7 @@ def crear_cabecera():
 
 # Definimos por defecto la version que tenemos de la API y las establecemos en nuestras aplicaciones
 API_VERSION = env("API_VERSION", default="v1") 
-API_BASE_URL = f'http://127.0.0.1:8000/api/{API_VERSION}/'
+API_BASE_URL = f'https://mohbenbou.pythonanywhere.com/api/{API_VERSION}/'
 
 def index(request):
     return render(request, 'index.html')

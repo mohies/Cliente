@@ -12,14 +12,6 @@
                 </div>
                 <div class="card-body">
                     <p class="card-text"><strong>Descripción:</strong> {{ torneo.descripcion }}</p>
-
-                    <h6 class="mt-3">Imagen del Torneo:</h6>
-                    {% if torneo.imagen %}
-                        <img src="{{ torneo.imagen.url }}" alt="Imagen del Torneo" class="img-fluid mb-3" style="max-height: 200px;">
-                    {% else %}
-                        <p>No hay imagen asignada.</p>
-                    {% endif %}
-
                     <h6 class="mt-3">Jugadores:</h6>
                     {% if torneo.jugadores %}
                         <ul class="list-group">
