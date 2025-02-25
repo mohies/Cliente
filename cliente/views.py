@@ -34,7 +34,7 @@ def crear_cabecera():
 
 # Definimos por defecto la version que tenemos de la API y las establecemos en nuestras aplicaciones
 API_VERSION = env("API_VERSION", default="v1") 
-API_BASE_URL = f'https://mohbenbou.pythonanywhere.com/api/{API_VERSION}/'
+API_BASE_URL = f'http://127.0.0.1:8000/api/{API_VERSION}/'
 
 def index(request):
     return render(request, 'index.html')
@@ -824,6 +824,50 @@ def jugador_eliminar_torneo(request, jugador_id, torneo_id):
         return resultado
     
     return mi_error_500(request)
+
+
+
+def registrar_usuario(request):
+    helper = Helper() 
+
+    if request.method == 'POST':
+        formulario = RegistroForm(request.POST)
+
+        if formulario.is_valid():
+  
+            datos = formulario.cleaned_data.copy()
+            
+        
+            response = helper.realizar_peticion(
+                metodo='POST',
+                url=f'{API_BASE_URL}registrar/usuario/',
+                datos=datos,
+                request=request
+            )
+
+            resultado = helper.procesar_respuesta(
+                request, 
+                response, 
+                formulario, 
+                "Usuario registrado exitosamente.", 
+                "index"
+            )
+
+            if resultado:
+                return resultado
+        
+    else:
+        formulario = RegistroForm()
+
+    return render(request, 'cliente/registration/signup.html', {"formulario": formulario})
+
+
+
+
+
+
+
+
 
 
 def tratar_errores(request,codigo):

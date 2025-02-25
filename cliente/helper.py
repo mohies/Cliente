@@ -59,7 +59,7 @@ def crear_cabecera():
 
 env = environ.Env()
 
-# Construye el path de BASE_DIR (en settings.py ya está definido, pero si no, agrégalo)
+# Construye el path de BASE_DIR 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Carga las variables del archivo .env

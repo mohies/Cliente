@@ -38,6 +38,7 @@ urlpatterns = [
     path('jugadores/editar_puntos/<int:jugador_id>/', views.editar_puntos_jugador, name="editar_puntos_jugador"),
     path('jugadores/eliminar/<int:jugador_id>/<int:torneo_id>/', views.jugador_eliminar_torneo, name="jugador_eliminar_torneo"),
  
+    path('registro/', views.registrar_usuario, name='registrar_usuario'),
 
     
 

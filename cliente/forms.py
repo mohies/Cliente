@@ -249,7 +249,7 @@ class ParticipanteActualizarEquiposForm(forms.Form):
 
         self.fields["equipos"] = forms.MultipleChoiceField(
             choices=equiposDisponibles,
-            required=False,  # ✅ Puede no tener equipos asignados
+            required=False,  
             help_text="Mantén pulsada la tecla Control para seleccionar varios equipos"
         )
 
