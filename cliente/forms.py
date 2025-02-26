@@ -7,6 +7,8 @@ import datetime
 from django.contrib.auth.forms import UserCreationForm
 import json
 from .helper import Helper
+from django.contrib.auth.models import User
+
 
 class BusquedaTorneoForm(forms.Form):
     textoBusqueda = forms.CharField(required=True)
@@ -55,14 +57,16 @@ class BusquedaAvanzadaJuegoForm(forms.Form):
 
 
 class RegistroForm(UserCreationForm):
-    roles = (
-        ('Jugador'),
-        ( 'Organizador'),
+    ROLES = (
+        (2, 'Jugador'),
+        (3, 'Organizador'),
     )
 
-    rol = forms.ChoiceField(choices=roles, label="Rol", required=True)
+
+    rol = forms.ChoiceField(choices=ROLES, label="Rol", required=True)
 
     class Meta:
+        model = User
         fields = ('username', 'email', 'password1', 'password2', 'rol')
 
 
@@ -312,7 +316,9 @@ class TorneoActualizarImagenForm(forms.Form):
     )
 
 
-
+class LoginForm(forms.Form):
+    usuario = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput())
 
 
 

@@ -11,21 +11,25 @@
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'index' %}">Inicio</a>
             </li>
-            <!-- Enlace a Búsqueda SINV -->
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'torneo_buscar_avanzado_sin_validaciones' %}">Búsqueda SINV</a>
-            </li>
+           
+            
             <!-- Menú desplegable para Búsquedas Avanzadas -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownBusqueda" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Búsquedas Avanzadas
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownBusqueda">
+                    <!-- Enlace a Búsqueda SINV -->
+                    <li class="nav-item">
+                        <a class="dropdown-item" href="{% url 'torneo_buscar_avanzado_sin_validaciones' %}">Búsqueda SINV</a>
+                    </li>
                     <li><a class="dropdown-item" href="{% url 'equipo_busqueda_avanzada' %}">Equipos</a></li>
                     <li><a class="dropdown-item" href="{% url 'participante_busqueda_avanzada' %}">Participantes</a></li>
                     <li><a class="dropdown-item" href="{% url 'juego_busqueda_avanzada' %}">Juegos</a></li>
+                  
                 </ul>
             </li>
+            
             <!-- Menú desplegable para Torneos -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTorneos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -36,6 +40,7 @@
                     <li><a class="dropdown-item" href="{% url 'crear_torneo' %}">Crear Torneo</a></li>
                 </ul>
             </li>
+            
             <!-- Menú desplegable para Juegos -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownJuegos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -46,6 +51,7 @@
                     <li><a class="dropdown-item" href="{% url 'crear_juego' %}">Crear Juego</a></li>
                 </ul>
             </li>
+            
             <!-- Menú desplegable para Participantes -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownParticipantes" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -56,25 +62,39 @@
                     <li><a class="dropdown-item" href="{% url 'crear_participante' %}">Crear Participante</a></li>
                 </ul>
             </li>
-
-
-                <!--Menú desplegable para Jugadores -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownJugadores" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Jugadores
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownJugadores">
-                        <li><a class="dropdown-item" href="{% url 'crear_jugador' %}">Crear Jugador</a></li>
-                        <li><a class="dropdown-item" href="{% url 'listar_torneos' %}">Lista de Torneos</a></li>
-                    </ul>
-                </li>
-            </ul>
+            
+            <!-- Menú desplegable para Jugadores -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownJugadores" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Jugadores
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownJugadores">
+                    <li><a class="dropdown-item" href="{% url 'crear_jugador' %}">Crear Jugador</a></li>
+                    <li><a class="dropdown-item" href="{% url 'listar_torneos' %}">Lista de Torneos</a></li>
+                </ul>
+            </li>
         </ul>
+
         <!-- Formulario de búsqueda -->
-        <form class="d-flex ms-auto" method="GET" action="{% url 'torneo_busqueda_simple' %}">
+        <form class="d-flex me-3" method="GET" action="{% url 'torneo_busqueda_simple' %}">
             {% csrf_token %}
             <input class="form-control me-2" type="search" placeholder="Buscar torneos" name="textoBusqueda" aria-label="Buscar torneos">
             <button class="btn btn-outline-success" type="submit">Buscar</button>
         </form>
+
+        <!-- Botón de Login/Cerrar Sesión -->
+        <!-- Botón de Login/Cerrar Sesión -->
+        <ul class="navbar-nav">
+            {% if request.session.is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link btn btn-danger text-white" href="{% url 'logout' %}">Cerrar Sesión</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link btn btn-success text-white" href="{% url 'login' %}">Iniciar Sesión</a>
+            </li>
+            {% endif %}
+        </ul>
+
     </div>
 </nav>

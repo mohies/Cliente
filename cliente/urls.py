@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-
+from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('', views.index, name='index'),
     path('listar-torneos/', views.torneos_lista_api, name='listar_torneos'),
@@ -39,6 +39,13 @@ urlpatterns = [
     path('jugadores/eliminar/<int:jugador_id>/<int:torneo_id>/', views.jugador_eliminar_torneo, name="jugador_eliminar_torneo"),
  
     path('registro/', views.registrar_usuario, name='registrar_usuario'),
+    path('login',views.login,name='login'),
+    path('logout',views.logout,name='logout'),
+    
+    path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'), #url en la cual nos lleva al reseto para llevarnos a la pagina a llevar un correo para restablecerla contraseña
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),#url confirmacion de contraseña
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     
 

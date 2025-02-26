@@ -7,6 +7,8 @@ import xml.etree.ElementTree as ET
 import logging
 from django.contrib import messages
 from requests.exceptions import HTTPError
+import requests
+from requests.exceptions import HTTPError, ConnectionError, Timeout
 logger = logging.getLogger(__name__)
 
 def process_response(response):
@@ -54,7 +56,40 @@ def crear_cabecera():
         'Authorization': f'Bearer {token}',
         'Content-Type': 'application/json'
     }
+"""
+def crear_cabecera2():
+    helper = Helper()
 
+    # Si ya tenemos el token, lo usamos
+    if helper.token:
+        return {
+            'Authorization': f'Bearer {helper.token}',
+            'Content-Type': 'application/x-www-form-urlencoded'  # Cambiamos el tipo de contenido
+        }
+
+    # Si no hay token, obtenemos uno nuevo
+    token_url = f'{API_BASE_TOKEN}oauth2/token/'
+    datos = {
+        'grant_type': 'password',
+        'username': 'admin',  
+        'password': 'admin',  
+        'client_id': 'pepeid',
+        'client_secret': 'pepesecreto',
+    }
+
+    # Solicitamos el token directamente
+    response = requests.post(token_url, data=datos)
+    
+    # Solo manejamos el caso exitoso (200)
+    token = response.json().get('access_token')
+    helper.token = token  # Guardamos el token para futuras peticiones
+    
+    return {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/x-www-form-urlencoded'  # Cambiamos el tipo de contenido
+    }
+
+"""
 
 
 env = environ.Env()
@@ -244,6 +279,74 @@ class Helper:
         except Exception as err:
             logger.error(f'Error inesperado: {err}')
             return mi_error_500(request)
+   
+    """
+    def realizar_peticion2(self, metodo, url, datos=None, params=None, archivos=None, request=None):
+
+        Método genérico para realizar peticiones HTTP para formularios,
+        manejar errores y mostrar mensajes de éxito.
+    
+        headers = crear_cabecera()  # Obtiene el token automáticamente
+
+        try:
+            # Si se están enviando datos de formulario
+            if datos:
+                if isinstance(datos, dict):  # Aseguramos que los datos sean un diccionario (como un formulario)
+                    data = datos
+                else:
+                    raise ValueError("Los datos deben ser un diccionario para enviarlos como formulario.")
+            else:
+                data = None
+
+            # Dependiendo del tipo de método, realizamos la petición correspondiente
+            if metodo == 'GET':
+                response = requests.get(url, headers=headers, params=params)
+
+            elif metodo == 'POST':
+                response = requests.post(url, headers=headers, data=data)  # Enviar datos como formulario
+
+            elif metodo == 'PUT':
+                response = requests.put(url, headers=headers, data=data)
+
+            elif metodo == 'PATCH':
+                response = requests.patch(url, headers=headers, data=data)
+
+            elif metodo == 'DELETE':
+                response = requests.delete(url, headers=headers)
+
+            elif metodo == 'PATCH-FILE':
+                response = requests.patch(url, files=archivos)  # Si es un archivo, lo enviamos directamente
+
+            else:
+                raise ValueError("Método HTTP no soportado.")
+            
+            # Si la respuesta HTTP es exitosa, devolvemos la respuesta
+            response.raise_for_status()  # Lanza excepción para errores HTTP
+            return response
+
+        except HTTPError as http_err:
+            # Si ocurre un error HTTP, lo registramos
+            if http_err.response is not None:
+                try:
+                    errores_json = http_err.response.json()
+                    logger.error(f'Error HTTP {http_err.response.status_code}: {errores_json}')
+                except ValueError:
+                    logger.error(f'Error HTTP {http_err.response.status_code}: {http_err.response.text}')
+            else:
+                logger.error(f'Error HTTP sin respuesta: {http_err}')
+            
+            return http_err.response  # Retorna la respuesta con el error
+        
+        except (ConnectionError, Timeout) as conn_err:
+            logger.error(f'Error de conexión o timeout: {conn_err}')
+            if requests.request:
+                messages.error(requests.request, 'Error de conexión. Intenta más tarde.')
+                return mi_error_500(request)
+
+        except Exception as err:
+            logger.error(f'Error inesperado: {err}')
+            return mi_error_500(request)
+    """
 
 
     def procesar_respuesta(self, request, response, formulario=None, exito_msg="Operación exitosa.", redirect_url="index"):

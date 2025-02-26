@@ -834,10 +834,9 @@ def registrar_usuario(request):
         formulario = RegistroForm(request.POST)
 
         if formulario.is_valid():
-  
             datos = formulario.cleaned_data.copy()
+            print("Datos enviados al servidor:", datos)  # 👈 Agrega esto para ver qué se está enviando
             
-        
             response = helper.realizar_peticion(
                 metodo='POST',
                 url=f'{API_BASE_URL}registrar/usuario/',
@@ -860,6 +859,58 @@ def registrar_usuario(request):
         formulario = RegistroForm()
 
     return render(request, 'cliente/registration/signup.html', {"formulario": formulario})
+
+
+
+def login(request):
+    helper = Helper()  # Instancia de Helper
+    if request.method == "POST":
+        formulario = LoginForm(request.POST)
+        
+        try:
+            # 1. Llama a crear_cabecera() para obtener o reutilizar el token
+            cabecera = crear_cabecera()
+
+            # 2. Extrae el token de la cabecera
+            token_acceso = cabecera.get('Authorization').split(' ')[1]
+            request.session["token"] = token_acceso  # Guarda el token en la sesión
+            
+            # 3. Con el token, solicita los datos del usuario
+            response = helper.realizar_peticion(
+                metodo='GET',
+                url=f'http://127.0.0.1:8000/api/v1/usuario/token/{token_acceso}/',
+                request=request
+            )
+            
+            # 4. Verifica si la respuesta es exitosa y guarda la información del usuario
+            if response.status_code == 200:
+                usuario = response.json()
+                request.session["usuario"] = usuario  # Guarda los datos del usuario en la sesión
+                request.session["is_authenticated"] = True # Marca la sesión como autenticada
+                messages.success(request, "Inicio de sesión exitoso.")
+                return redirect("index")
+            else:
+                messages.error(request, "No se pudo obtener la información del usuario.")
+                formulario.add_error("usuario", "Usuario o contraseña incorrectos.")
+        
+        except Exception as excepcion:
+            print(f'Hubo un error en la petición: {excepcion}')
+            formulario.add_error("usuario", excepcion)
+            formulario.add_error("password", excepcion)
+            return render(request, 
+                          'cliente/registration/login.html',
+                          {"form": formulario})
+                          
+    else:
+        formulario = LoginForm()
+
+    return render(request, 'cliente/registration/login.html', {'form': formulario})
+
+
+def logout(request):
+    request.session.flush()  # Borra toda la sesión y `is_authenticated`
+    return redirect('index')
+
 
 
 
