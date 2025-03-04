@@ -217,7 +217,7 @@ Este proyecto permite una gestión completa de torneos, incluyendo:
 
 
 ## 🚀 Despliegue con Docker
-
+Antes de iniciar el docker hay que migrar la aplicacion
 ### 🐳 **Iniciar la API con Docker**
 Para construir y ejecutar la API, usa:
 
