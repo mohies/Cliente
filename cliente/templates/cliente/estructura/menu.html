@@ -11,22 +11,20 @@
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'index' %}">Inicio</a>
             </li>
-           
+
             <!-- Menú desplegable para Búsquedas Avanzadas -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownBusqueda" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Búsquedas Avanzadas
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownBusqueda">
-                    <li class="nav-item">
-                        <a class="dropdown-item" href="{% url 'torneo_buscar_avanzado_sin_validaciones' %}">Búsqueda SINV</a>
-                    </li>
+                    <li><a class="dropdown-item" href="{% url 'torneo_buscar_avanzado_sin_validaciones' %}">Búsqueda SINV</a></li>
                     <li><a class="dropdown-item" href="{% url 'equipo_busqueda_avanzada' %}">Equipos</a></li>
                     <li><a class="dropdown-item" href="{% url 'participante_busqueda_avanzada' %}">Participantes</a></li>
                     <li><a class="dropdown-item" href="{% url 'juego_busqueda_avanzada' %}">Juegos</a></li>
                 </ul>
             </li>
-            
+
             <!-- Menú desplegable para Torneos -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTorneos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -37,7 +35,7 @@
                     <li><a class="dropdown-item" href="{% url 'crear_torneo' %}">Crear Torneo</a></li>
                 </ul>
             </li>
-            
+
             <!-- Menú desplegable para Juegos -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownJuegos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -48,7 +46,7 @@
                     <li><a class="dropdown-item" href="{% url 'crear_juego' %}">Crear Juego</a></li>
                 </ul>
             </li>
-            
+
             <!-- Menú desplegable para Participantes -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownParticipantes" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -59,7 +57,7 @@
                     <li><a class="dropdown-item" href="{% url 'crear_participante' %}">Crear Participante</a></li>
                 </ul>
             </li>
-            
+
             <!-- Menú desplegable para Jugadores -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownJugadores" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -79,41 +77,42 @@
             <button class="btn btn-outline-success" type="submit">Buscar</button>
         </form>
 
-        <!-- Botones de Login, Registro y Cerrar Sesión -->
+        <!-- Usuario autenticado -->
         <ul class="navbar-nav">
             {% if request.session.is_authenticated %}
-            <div class="dropdown me-3">
-                <button class="btn btn-outline-light dropdown-toggle" type="button" id="dropdownUsuario" data-bs-toggle="dropdown" aria-expanded="false">
-                    Bienvenido, {{ request.session.username }}
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUsuario">
-                    <li><a class="dropdown-item" href="#">👤 Usuario: {{ request.session.username }}</a></li>
-                    <li><a class="dropdown-item" href="#">📧 Email: {{ request.session.email }}</a></li>
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            🎭 Rol: 
-                            {% if request.session.user_rol == 1 %} Administrador
-                            {% elif request.session.user_rol == 2 %} Jugador
-                            {% elif request.session.user_rol == 3 %} Organizador
-                            {% else %} Desconocido
-                            {% endif %}
-                        </a>
-                    </li>
-                    <li><a class="dropdown-item" href="{% url 'torneos_usuario_view' %}">📋 Torneos donde participo</a></li>
-                     <li><a class="dropdown-item" href="{% url 'torneos-usuario-jugadores' %}">👥 Torneos con mis jugadores</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <form action="{% url 'logout' %}" method="post" class="px-3 py-2">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-sm">Cerrar sesión</button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-        {% else %}
-            <a class="btn btn-outline-success me-3" href="{% url 'login' %}">Iniciar sesión</a>
-        {% endif %}
-        
+                <div class="dropdown me-3">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="dropdownUsuario" data-bs-toggle="dropdown" aria-expanded="false">
+                        Bienvenido, {{ request.session.username }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUsuario">
+                        <li><a class="dropdown-item" href="#">👤 Usuario: {{ request.session.username }}</a></li>
+                        <li><a class="dropdown-item" href="#">📧 Email: {{ request.session.email }}</a></li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                🎭 Rol: 
+                                {% if request.session.user_rol == 1 %} Administrador
+                                {% elif request.session.user_rol == 2 %} Jugador
+                                {% elif request.session.user_rol == 3 %} Organizador
+                                {% else %} Desconocido
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li><a class="dropdown-item" href="{% url 'torneos_usuario_view' %}">📋 Torneos donde participo</a></li>
+                        <li><a class="dropdown-item" href="{% url 'torneos-usuario-jugadores' %}">👥 Torneos con mis jugadores</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form action="{% url 'logout' %}" method="post" class="px-3 py-2">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">Cerrar sesión</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            {% else %}
+                <!-- Mostrar botones de Iniciar sesión y Registrarse si el usuario no está autenticado -->
+                <a class="btn btn-outline-success me-2" href="{% url 'login' %}">Iniciar sesión</a>
+                <a class="btn btn-outline-primary" href="{% url 'registrar_usuario' %}">Registrarse</a>
+            {% endif %}
         </ul>
     </div>
 </nav>
