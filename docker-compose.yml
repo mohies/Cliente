@@ -7,5 +7,3 @@ services:
       - ./db.sqlite3:/app/db.sqlite3  # Mantener la base de datos persistente
       - ./media:/app/media            # Guardar archivos subidos (opcional)
       - ./static:/app/static          # Archivos estáticos (opcional)
-    env_file:
-      - .env
