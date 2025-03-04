@@ -70,8 +70,8 @@ Esta aplicación permite a los usuarios registrarse, iniciar sesión y gestionar
 
 Para obtener el código fuente del proyecto, ejecuta:  
 
-    git clone https://github.com/tu_usuario/tu_repositorio.git  
-    cd tu_repositorio  
+    git clone git@github.com:mohies/Cliente.git 
+    cd Cliente  
 
 ---
 
