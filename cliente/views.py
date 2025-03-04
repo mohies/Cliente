@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 # Definimos por defecto la version que tenemos de la API y las establecemos en nuestras aplicaciones
 API_VERSION = env("API_VERSION", default="v1") 
-API_BASE_URL = f'https://mohbenbou.pythonanywhere.com/api/{API_VERSION}/'
+API_BASE_URL = f'http://127.0.0.1:8000/api/{API_VERSION}/'
 
 def index(request):
     return render(request, 'index.html')

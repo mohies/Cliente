@@ -45,8 +45,8 @@ def crear_cabecera(request=None):
     token_url = f'{API_BASE_TOKEN}oauth2/token/'
     datos = {
         'grant_type': 'password',
-        'username': 'javier',  
-        'password': 'elpepe34',  
+        'username': 'nada',  
+        'password': 'elnadador',  
         'client_id': 'pepeid',
         'client_secret': 'pepesecreto',
     }
@@ -416,7 +416,14 @@ class Helper:
                     
             messages.error(request, 'Error en los datos proporcionados. Revisa los campos.')
             return None
-        # Manejo de errores 404, 500 y otros y el logueo de los errores
+
+        # Manejo de error 403 (Forbidden)
+        elif response.status_code == 403:
+            logger.error(f'Error 403: {response.text}')
+            messages.error(request, 'Acceso denegado. No tienes permisos para realizar esta operación.')
+            return None
+
+        # Manejo de errores 404, 500 y otros
         elif response.status_code == 404:
             logger.error('Error 404: Recurso no encontrado.')
             messages.error(request, 'Recurso no encontrado.')
@@ -431,17 +438,6 @@ class Helper:
             logger.error(f'Error desconocido: {response.status_code} - {response.text}')
             messages.error(request, 'Ocurrió un error inesperado. Intenta nuevamente.')
             return mi_error_500(request)
-
-        
-    def manejar_error_400(self, response, formulario, template_name, request):
-        """
-        Centraliza el manejo de errores 400 en la aplicación.
-        """
-        errores = process_response(response)
-        for campo, mensaje in errores.items():
-            formulario.add_error(campo, mensaje)
-        
-        return render(request, template_name, {"formulario": formulario, "errores": errores})
         
 def tratar_errores(request,codigo):
     if codigo == 404:
