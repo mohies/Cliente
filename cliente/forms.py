@@ -259,11 +259,6 @@ class ParticipanteActualizarEquiposForm(forms.Form):
 
 
 class JugadorForm(forms.Form):
-    usuario = forms.ChoiceField(
-        label="Usuario",
-        required=True,
-        help_text="Selecciona el usuario que se convertirá en jugador"
-    )
     
     puntos = forms.IntegerField(
         label="Puntos",
@@ -287,12 +282,7 @@ class JugadorForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(JugadorForm, self).__init__(*args, **kwargs)
-        helper = Helper()
-        
-        # Obtener usuarios disponibles
-        usuarios_disponibles = helper.obtener_usuarioslogin_select()
-        self.fields["usuario"].choices = usuarios_disponibles
-        
+        helper = Helper()     
         # Obtener torneos disponibles
         torneos_disponibles = helper.obtener_torneos_select()
         self.fields["torneos"].choices = torneos_disponibles

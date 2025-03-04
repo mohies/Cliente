@@ -45,8 +45,8 @@ def crear_cabecera(request=None):
     token_url = f'{API_BASE_TOKEN}oauth2/token/'
     datos = {
         'grant_type': 'password',
-        'username': 'nada',  
-        'password': 'elnadador',  
+        'username': 'javier',  
+        'password': 'elpepe34',  
         'client_id': 'pepeid',
         'client_secret': 'pepesecreto',
     }
@@ -115,8 +115,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 API_VERSION = env("API_VERSION", default="v1") 
-API_BASE_URL = f'https://mohbenbou.pythonanywhere.com/api/{API_VERSION}/'
-API_BASE_TOKEN = f'https://mohbenbou.pythonanywhere.com/'
+API_BASE_URL = f'http://127.0.0.1:8000/api/{API_VERSION}/'
+API_BASE_TOKEN = f'http://127.0.0.1:8000/'
 
 class Helper:
     
@@ -412,8 +412,12 @@ class Helper:
             # Si el error es diferente, aplica el manejo genérico
             if formulario:
                 for campo, mensaje in errores.items():
-                    formulario.add_error(campo, mensaje)
-                    
+                    if campo in formulario.fields:  # Verifica si el campo existe en el formulario
+                        formulario.add_error(campo, mensaje)
+                    else:
+                        # Si el campo no existe, puedes agregar el mensaje de error como un error global
+                        formulario.add_error(None, f"Error en {campo}: {mensaje}")
+
             messages.error(request, 'Error en los datos proporcionados. Revisa los campos.')
             return None
 
@@ -438,6 +442,7 @@ class Helper:
             logger.error(f'Error desconocido: {response.status_code} - {response.text}')
             messages.error(request, 'Ocurrió un error inesperado. Intenta nuevamente.')
             return mi_error_500(request)
+
         
 def tratar_errores(request,codigo):
     if codigo == 404:

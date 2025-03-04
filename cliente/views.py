@@ -701,37 +701,46 @@ Realizar las operaciones de POST, PUT, PATCH y DELETE de un modelo con relacione
 con sus validaciones(al menos 3 campos), control de errores y respuestas.(1 punto ,0,25:POST, 0,25: PUT, 0,25:PATCH, 0,25-DELETE)
 """
 def crear_jugador(request):
+    """
+    Vista del cliente para inscribir al usuario autenticado en torneos.
+    """
     helper = Helper()  
-    
+
     if request.method == 'POST':
         formulario = JugadorForm(request.POST)
-        
+
         if formulario.is_valid():
+            # Copiar datos del formulario
             datos = formulario.cleaned_data.copy()
+
+            # Extraer los torneos seleccionados
             datos["torneos"] = request.POST.getlist("torneos")
-            
+
+            # Enviar la petición al backend (no mandamos usuario porque ya lo gestionamos con el token)
             response = helper.realizar_peticion(
                 metodo='POST',
                 url=f'{API_BASE_URL}jugadores/crear/',
                 datos=datos,
                 request=request
             )
-            
+
+            # Procesar la respuesta
             resultado = helper.procesar_respuesta(
                 request, 
                 response, 
                 formulario, 
-                "Jugador creado exitosamente.", 
+                "¡Te has inscrito a los torneos exitosamente!", 
                 "listar_torneos"
             )
-            
+
             if resultado:
                 return resultado
-        
+
     else:
         formulario = JugadorForm()
-    
+
     return render(request, 'cliente/create/crear_jugador.html', {"formulario": formulario})
+
 
 
 def editar_jugador(request, jugador_id):
@@ -885,7 +894,7 @@ def login(request):
             password = formulario.data.get("password")
 
             # 1️ Solicitar el token de acceso
-            token_url = 'https://mohbenbou.pythonanywhere.com/oauth2/token/'
+            token_url = 'http://127.0.0.1:8000/oauth2/token/'
             datos = {
                 'grant_type': 'password',
                 'username': usuario,
@@ -902,7 +911,7 @@ def login(request):
 
                 # 3️ Obtener información del usuario autenticado
                 headers = {'Authorization': f'Bearer {token_acceso}'}
-                user_response = requests.get(f'https://mohbenbou.pythonanywhere.com/api/v1/usuario/token/{token_acceso}/', headers=headers)
+                user_response = requests.get(f'http://127.0.0.1:8000/api/v1/usuario/token/{token_acceso}/', headers=headers)
 
                 if user_response.status_code == 200:
                     usuario_data = user_response.json()
