@@ -7,6 +7,8 @@ import xml.etree.ElementTree as ET
 import logging
 from django.contrib import messages
 from requests.exceptions import HTTPError
+import requests
+from requests.exceptions import HTTPError, ConnectionError, Timeout
 logger = logging.getLogger(__name__)
 
 def process_response(response):
@@ -23,16 +25,62 @@ def process_response(response):
     # Si el tipo de contenido no es ni JSON ni XML, lanza un error
     else:
         raise ValueError('Unsupported content type: {}'.format(response.headers['Content-Type']))
-def crear_cabecera():
+def crear_cabecera(request=None):
+    """
+    Crea y devuelve una cabecera con el token de autenticación de la sesión.
+    - Usa el token de la sesión si está disponible.
+    - Si no hay token en la sesión, obtiene uno nuevo y lo almacena.
+    """
+
+    if request and hasattr(request, 'session'):
+        token = request.session.get("token")  # 🔹 Intentamos obtener el token de la sesión
+
+        if token:
+            return {
+                'Authorization': f'Bearer {token}',
+                'Content-Type': 'application/json'
+            }
+
+    #  Si no hay token en la sesión, obtenemos uno nuevo
+    token_url = f'{API_BASE_TOKEN}oauth2/token/'
+    datos = {
+        'grant_type': 'password',
+        'username': 'javier',  
+        'password': 'elpepe34',  
+        'client_id': 'pepeid',
+        'client_secret': 'pepesecreto',
+    }
+
+    response = requests.post(token_url, data=datos)
+
+    if response.status_code == 200:
+        token = response.json().get('access_token')
+
+        # Guardamos el nuevo token en la sesión, si es posible
+        if request and hasattr(request, 'session'):
+            request.session["token"] = token  
+
+        return {
+            'Authorization': f'Bearer {token}',
+            'Content-Type': 'application/json'
+        }
+
+    # ❌ Si no se pudo obtener un token, devolvemos una cabecera sin autenticación
+    return {
+        'Content-Type': 'application/json'
+    }
+
+"""
+def crear_cabecera2():
     helper = Helper()
-    
+
     # Si ya tenemos el token, lo usamos
     if helper.token:
         return {
             'Authorization': f'Bearer {helper.token}',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/x-www-form-urlencoded'  # Cambiamos el tipo de contenido
         }
-    
+
     # Si no hay token, obtenemos uno nuevo
     token_url = f'{API_BASE_TOKEN}oauth2/token/'
     datos = {
@@ -52,14 +100,15 @@ def crear_cabecera():
     
     return {
         'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/x-www-form-urlencoded'  # Cambiamos el tipo de contenido
     }
 
+"""
 
 
 env = environ.Env()
 
-# Construye el path de BASE_DIR (en settings.py ya está definido, pero si no, agrégalo)
+# Construye el path de BASE_DIR 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Carga las variables del archivo .env
@@ -83,6 +132,8 @@ class Helper:
     def obtener_categorias_select(self):
         headers = crear_cabecera()
         response = requests.get(f'{API_BASE_URL}categorias/', headers=headers)
+        print("RESPUESTA API:", response)  # Para ver qué está devolviendo realmente
+
         categorias = response.json()
         return [(categoria, categoria) for categoria in categorias]  # Devuelve tuplas (nombre, nombre)
     
@@ -186,6 +237,38 @@ class Helper:
             return response.json()
         return None  # Devuelve None si falla la petición
     
+    def obtener_torneos_usuario(self, request):
+        """
+        Obtiene los torneos en los que el usuario autenticado está inscrito.
+        """
+        headers = crear_cabecera(request)  # Usa el token de la sesión
+        url = f"{API_BASE_URL}torneos/mis-torneos/"  # 🔹 Asegúrate de que la URL es correcta
+        
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logger.error(f"Error al obtener los torneos del usuario: {response.status_code} - {response.text}")
+            return None
+    
+    def obtener_torneos_usuario_con_jugadores(self, request):
+        """
+        🔹 Obtiene los torneos en los que el usuario autenticado está inscrito,
+        junto con la lista de jugadores en cada torneo.
+        """
+        headers = crear_cabecera(request)  # Usa el token de la sesión
+        url = f"{API_BASE_URL}torneos/mis-torneos-jugadores/"  # 🔹 Endpoint correcto
+        
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logger.error(f"Error al obtener torneos y jugadores: {response.status_code} - {response.text}")
+            return None
+
+    
    
    
     """
@@ -199,8 +282,7 @@ class Helper:
         """
         Método genérico para realizar peticiones HTTP, manejar errores y mostrar mensajes de éxito.
         """
-        headers = crear_cabecera()  # Obtiene el token automáticamente
-
+        headers = crear_cabecera(request)
         try:
 
             if metodo == 'GET':
@@ -244,6 +326,74 @@ class Helper:
         except Exception as err:
             logger.error(f'Error inesperado: {err}')
             return mi_error_500(request)
+   
+    """
+    def realizar_peticion2(self, metodo, url, datos=None, params=None, archivos=None, request=None):
+
+        Método genérico para realizar peticiones HTTP para formularios,
+        manejar errores y mostrar mensajes de éxito.
+    
+        headers = crear_cabecera()  # Obtiene el token automáticamente
+
+        try:
+            # Si se están enviando datos de formulario
+            if datos:
+                if isinstance(datos, dict):  # Aseguramos que los datos sean un diccionario (como un formulario)
+                    data = datos
+                else:
+                    raise ValueError("Los datos deben ser un diccionario para enviarlos como formulario.")
+            else:
+                data = None
+
+            # Dependiendo del tipo de método, realizamos la petición correspondiente
+            if metodo == 'GET':
+                response = requests.get(url, headers=headers, params=params)
+
+            elif metodo == 'POST':
+                response = requests.post(url, headers=headers, data=data)  # Enviar datos como formulario
+
+            elif metodo == 'PUT':
+                response = requests.put(url, headers=headers, data=data)
+
+            elif metodo == 'PATCH':
+                response = requests.patch(url, headers=headers, data=data)
+
+            elif metodo == 'DELETE':
+                response = requests.delete(url, headers=headers)
+
+            elif metodo == 'PATCH-FILE':
+                response = requests.patch(url, files=archivos)  # Si es un archivo, lo enviamos directamente
+
+            else:
+                raise ValueError("Método HTTP no soportado.")
+            
+            # Si la respuesta HTTP es exitosa, devolvemos la respuesta
+            response.raise_for_status()  # Lanza excepción para errores HTTP
+            return response
+
+        except HTTPError as http_err:
+            # Si ocurre un error HTTP, lo registramos
+            if http_err.response is not None:
+                try:
+                    errores_json = http_err.response.json()
+                    logger.error(f'Error HTTP {http_err.response.status_code}: {errores_json}')
+                except ValueError:
+                    logger.error(f'Error HTTP {http_err.response.status_code}: {http_err.response.text}')
+            else:
+                logger.error(f'Error HTTP sin respuesta: {http_err}')
+            
+            return http_err.response  # Retorna la respuesta con el error
+        
+        except (ConnectionError, Timeout) as conn_err:
+            logger.error(f'Error de conexión o timeout: {conn_err}')
+            if requests.request:
+                messages.error(requests.request, 'Error de conexión. Intenta más tarde.')
+                return mi_error_500(request)
+
+        except Exception as err:
+            logger.error(f'Error inesperado: {err}')
+            return mi_error_500(request)
+    """
 
 
     def procesar_respuesta(self, request, response, formulario=None, exito_msg="Operación exitosa.", redirect_url="index"):

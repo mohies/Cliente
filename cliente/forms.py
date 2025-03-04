@@ -7,6 +7,8 @@ import datetime
 from django.contrib.auth.forms import UserCreationForm
 import json
 from .helper import Helper
+from django.contrib.auth.models import User
+
 
 class BusquedaTorneoForm(forms.Form):
     textoBusqueda = forms.CharField(required=True)
@@ -55,14 +57,16 @@ class BusquedaAvanzadaJuegoForm(forms.Form):
 
 
 class RegistroForm(UserCreationForm):
-    roles = (
-        ('Jugador'),
-        ( 'Organizador'),
+    ROLES = (
+        (2, 'Jugador'),
+        (3, 'Organizador'),
     )
 
-    rol = forms.ChoiceField(choices=roles, label="Rol", required=True)
+
+    rol = forms.ChoiceField(choices=ROLES, label="Rol", required=True)
 
     class Meta:
+        model = User
         fields = ('username', 'email', 'password1', 'password2', 'rol')
 
 
@@ -77,6 +81,9 @@ class RegistroOrganizadorForm(forms.ModelForm):
 
 
 
+
+from django import forms
+import datetime
 
 class TorneoForm(forms.Form):
     nombre = forms.CharField(
@@ -102,22 +109,17 @@ class TorneoForm(forms.Form):
     
     imagen = forms.FileField(
         label="Archivo del Torneo",
-        required=False,  # Si es obligatorio, ponlo como True
+        required=False,
         help_text="Sube un archivo (puede ser una imagen u otro tipo de archivo)"
     )
 
-    def __init__(self, *args, **kwargs):
-        super(TorneoForm, self).__init__(*args, **kwargs)
-        
-        helper = Helper()
-        
-        # Obtener las categorías disponibles desde la API
-        categoriasDisponibles = helper.obtener_categorias_select()
-        self.fields["categoria"] = forms.ChoiceField(  
-            choices=categoriasDisponibles,
-            required=True,
-            help_text="Selecciona una categoría"
-        )
+    categoria = forms.CharField(
+        label="Categoría",
+        required=True,
+        max_length=100,
+        help_text="Escribe la categoría del torneo"
+    )
+
         
 class TorneoActualizarNombreForm(forms.Form):
     nombre = forms.CharField(
@@ -249,7 +251,7 @@ class ParticipanteActualizarEquiposForm(forms.Form):
 
         self.fields["equipos"] = forms.MultipleChoiceField(
             choices=equiposDisponibles,
-            required=False,  # ✅ Puede no tener equipos asignados
+            required=False,  
             help_text="Mantén pulsada la tecla Control para seleccionar varios equipos"
         )
 
@@ -312,7 +314,9 @@ class TorneoActualizarImagenForm(forms.Form):
     )
 
 
-
+class LoginForm(forms.Form):
+    usuario = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput())
 
 
 
