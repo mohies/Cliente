@@ -25,37 +25,51 @@ def process_response(response):
     # Si el tipo de contenido no es ni JSON ni XML, lanza un error
     else:
         raise ValueError('Unsupported content type: {}'.format(response.headers['Content-Type']))
-def crear_cabecera():
-    helper = Helper()
-    
-    # Si ya tenemos el token, lo usamos
-    if helper.token:
-        return {
-            'Authorization': f'Bearer {helper.token}',
-            'Content-Type': 'application/json'
-        }
-    
-    # Si no hay token, obtenemos uno nuevo
+def crear_cabecera(request=None):
+    """
+    Crea y devuelve una cabecera con el token de autenticación de la sesión.
+    - Usa el token de la sesión si está disponible.
+    - Si no hay token en la sesión, obtiene uno nuevo y lo almacena.
+    """
+
+    if request and hasattr(request, 'session'):
+        token = request.session.get("token")  # 🔹 Intentamos obtener el token de la sesión
+
+        if token:
+            return {
+                'Authorization': f'Bearer {token}',
+                'Content-Type': 'application/json'
+            }
+
+    #  Si no hay token en la sesión, obtenemos uno nuevo
     token_url = f'{API_BASE_TOKEN}oauth2/token/'
     datos = {
         'grant_type': 'password',
-        'username': 'admin',  
-        'password': 'admin',  
+        'username': 'javier',  
+        'password': 'elpepe34',  
         'client_id': 'pepeid',
         'client_secret': 'pepesecreto',
     }
 
-    # Solicitamos el token directamente
     response = requests.post(token_url, data=datos)
-    
-    # Solo manejamos el caso exitoso (200)
-    token = response.json().get('access_token')
-    helper.token = token  # Guardamos el token para futuras peticiones
-    
+
+    if response.status_code == 200:
+        token = response.json().get('access_token')
+
+        # Guardamos el nuevo token en la sesión, si es posible
+        if request and hasattr(request, 'session'):
+            request.session["token"] = token  
+
+        return {
+            'Authorization': f'Bearer {token}',
+            'Content-Type': 'application/json'
+        }
+
+    # ❌ Si no se pudo obtener un token, devolvemos una cabecera sin autenticación
     return {
-        'Authorization': f'Bearer {token}',
         'Content-Type': 'application/json'
     }
+
 """
 def crear_cabecera2():
     helper = Helper()
@@ -118,6 +132,8 @@ class Helper:
     def obtener_categorias_select(self):
         headers = crear_cabecera()
         response = requests.get(f'{API_BASE_URL}categorias/', headers=headers)
+        print("RESPUESTA API:", response)  # Para ver qué está devolviendo realmente
+
         categorias = response.json()
         return [(categoria, categoria) for categoria in categorias]  # Devuelve tuplas (nombre, nombre)
     
@@ -221,6 +237,38 @@ class Helper:
             return response.json()
         return None  # Devuelve None si falla la petición
     
+    def obtener_torneos_usuario(self, request):
+        """
+        Obtiene los torneos en los que el usuario autenticado está inscrito.
+        """
+        headers = crear_cabecera(request)  # Usa el token de la sesión
+        url = f"{API_BASE_URL}torneos/mis-torneos/"  # 🔹 Asegúrate de que la URL es correcta
+        
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logger.error(f"Error al obtener los torneos del usuario: {response.status_code} - {response.text}")
+            return None
+    
+    def obtener_torneos_usuario_con_jugadores(self, request):
+        """
+        🔹 Obtiene los torneos en los que el usuario autenticado está inscrito,
+        junto con la lista de jugadores en cada torneo.
+        """
+        headers = crear_cabecera(request)  # Usa el token de la sesión
+        url = f"{API_BASE_URL}torneos/mis-torneos-jugadores/"  # 🔹 Endpoint correcto
+        
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logger.error(f"Error al obtener torneos y jugadores: {response.status_code} - {response.text}")
+            return None
+
+    
    
    
     """
@@ -234,8 +282,7 @@ class Helper:
         """
         Método genérico para realizar peticiones HTTP, manejar errores y mostrar mensajes de éxito.
         """
-        headers = crear_cabecera()  # Obtiene el token automáticamente
-
+        headers = crear_cabecera(request)
         try:
 
             if metodo == 'GET':

@@ -26,15 +26,10 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # Configurar el logger
 logger = logging.getLogger(__name__)
 
-def crear_cabecera():
-    return {
-        'Authorization': 'Bearer PUHJyMz5miDrM6vYCQK6gd7LQxeuMf',
-        "Content-Type": "application/json"
-        }
 
 # Definimos por defecto la version que tenemos de la API y las establecemos en nuestras aplicaciones
 API_VERSION = env("API_VERSION", default="v1") 
-API_BASE_URL = f'http://127.0.0.1:8000/api/{API_VERSION}/'
+API_BASE_URL = f'https://mohbenbou.pythonanywhere.com/api/{API_VERSION}/'
 
 def index(request):
     return render(request, 'index.html')
@@ -109,24 +104,35 @@ def equipos_lista_api(request):
 
 
 def torneo_busqueda_simple(request):
-    try:
-        formulario = BusquedaTorneoForm(request.GET)
-        if formulario.is_valid():
-            headers = crear_cabecera()
-            response = requests.get(
-                f'{API_BASE_URL}torneos/buscar/',
-                headers=headers,
-                params={'textoBusqueda': formulario.data.get("textoBusqueda")}
-            )
-            torneos = process_response(response)
-            return render(request, 'cliente/lista_api.html', {"torneos_mostrar": torneos})
-        if "HTTP_REFERER" in request.META:
-            return redirect(request.META["HTTP_REFERER"])
-        else:
-            return redirect("index")
-    except Exception as err:
-        logger.error(f'Error en la búsqueda simple de torneos: {err}')
-        return mi_error_500(request)
+    helper = Helper()  # Instanciamos el Helper
+    
+    # Creamos el formulario con los datos GET de la solicitud
+    formulario = BusquedaTorneoForm(request.GET or None)
+    
+    # Verificamos si el formulario es válido
+    if formulario.is_valid():
+        params = formulario.cleaned_data
+        
+        # Realizamos la petición a la API utilizando el Helper
+        response = helper.realizar_peticion(
+            metodo='GET',
+            url=f'{API_BASE_URL}torneos/buscar/',
+            params={'textoBusqueda': params.get("textoBusqueda")},  # Pasamos el texto de búsqueda
+            request=request
+        )
+
+        # Procesamos la respuesta
+        torneos = process_response(response)
+        
+        # Renderizamos la respuesta con la lista de torneos
+        return render(request, 'cliente/lista_api.html', {"torneos_mostrar": torneos})
+    
+    # Si el formulario no es válido o no se realiza una búsqueda, redirigimos a la página de búsqueda
+    if "HTTP_REFERER" in request.META:
+        return redirect(request.META["HTTP_REFERER"])
+    else:
+        return redirect("index")
+
 
 
 def torneo_busqueda_avanzada(request):
@@ -827,6 +833,10 @@ def jugador_eliminar_torneo(request, jugador_id, torneo_id):
 
 
 
+def test_cors_view(request):
+    return render(request, "test_cors.html")
+
+
 def registrar_usuario(request):
     helper = Helper() 
 
@@ -862,54 +872,100 @@ def registrar_usuario(request):
 
 
 
+import requests
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
 def login(request):
-    helper = Helper()  # Instancia de Helper
     if request.method == "POST":
         formulario = LoginForm(request.POST)
         
         try:
-            # 1. Llama a crear_cabecera() para obtener o reutilizar el token
-            cabecera = crear_cabecera()
+            usuario = formulario.data.get("usuario")
+            password = formulario.data.get("password")
 
-            # 2. Extrae el token de la cabecera
-            token_acceso = cabecera.get('Authorization').split(' ')[1]
-            request.session["token"] = token_acceso  # Guarda el token en la sesión
-            
-            # 3. Con el token, solicita los datos del usuario
-            response = helper.realizar_peticion(
-                metodo='GET',
-                url=f'http://127.0.0.1:8000/api/v1/usuario/token/{token_acceso}/',
-                request=request
-            )
-            
-            # 4. Verifica si la respuesta es exitosa y guarda la información del usuario
+            # 1️ Solicitar el token de acceso
+            token_url = 'https://mohbenbou.pythonanywhere.com/oauth2/token/'
+            datos = {
+                'grant_type': 'password',
+                'username': usuario,
+                'password': password,
+                'client_id': 'pepeid',
+                'client_secret': 'pepesecreto',
+            }
+            response = requests.post(token_url, data=datos)
+
+            # 2️ Verificar si las credenciales son correctas
             if response.status_code == 200:
-                usuario = response.json()
-                request.session["usuario"] = usuario  # Guarda los datos del usuario en la sesión
-                request.session["is_authenticated"] = True # Marca la sesión como autenticada
-                messages.success(request, "Inicio de sesión exitoso.")
-                return redirect("index")
+                token_acceso = response.json().get('access_token')
+                request.session["token"] = token_acceso  # Guardamos el token en la sesión
+
+                # 3️ Obtener información del usuario autenticado
+                headers = {'Authorization': f'Bearer {token_acceso}'}
+                user_response = requests.get(f'https://mohbenbou.pythonanywhere.com/api/v1/usuario/token/{token_acceso}/', headers=headers)
+
+                if user_response.status_code == 200:
+                    usuario_data = user_response.json()
+                    print("Datos del usuario obtenidos:", usuario_data)  # Debug
+
+                    #  Guardar datos en la sesión de forma clara
+                    request.session["is_authenticated"] = True
+                    request.session["user_id"] = usuario_data.get("id")  # ID del usuario
+                    request.session["username"] = usuario_data.get("username")  
+                    request.session["email"] = usuario_data.get("email")
+                    request.session["user_rol"] = usuario_data.get("rol")  # Aseguramos que está
+
+                    messages.success(request, "Inicio de sesión exitoso.")
+                    return redirect("index")
+                else:
+                    messages.error(request, "No se pudo obtener la información del usuario.")
             else:
-                messages.error(request, "No se pudo obtener la información del usuario.")
-                formulario.add_error("usuario", "Usuario o contraseña incorrectos.")
+                messages.error(request, "Usuario o contraseña incorrectos.")
+
+        except Exception as e:
+            print(f'⚠️ Error en la petición: {e}')
+            messages.error(request, "Error interno en el servidor. Inténtalo de nuevo.")
         
-        except Exception as excepcion:
-            print(f'Hubo un error en la petición: {excepcion}')
-            formulario.add_error("usuario", excepcion)
-            formulario.add_error("password", excepcion)
-            return render(request, 
-                          'cliente/registration/login.html',
-                          {"form": formulario})
-                          
     else:
         formulario = LoginForm()
 
     return render(request, 'cliente/registration/login.html', {'form': formulario})
 
 
+
 def logout(request):
     request.session.flush()  # Borra toda la sesión y `is_authenticated`
     return redirect('index')
+
+
+def torneos_usuario_view(request):
+    """
+    Vista en el cliente que obtiene y muestra los torneos del usuario autenticado.
+    """
+    helper = Helper()  # Instancia el Helper
+    torneos = helper.obtener_torneos_usuario(request)  # Obtiene los torneos desde la API
+    
+    if torneos is None:
+        return render(request, "cliente/error.html", {"mensaje": "Error al obtener torneos o usuario no autenticado"})
+
+    return render(request, "cliente/torneos_usuario.html", {"torneos": torneos})
+
+
+def torneos_usuario_con_jugadores_view(request):
+    """
+    🔹 Vista en el cliente que obtiene y muestra los torneos del usuario autenticado
+       junto con los jugadores en cada torneo.
+    """
+    helper = Helper()  # Instancia el Helper
+    torneos = helper.obtener_torneos_usuario_con_jugadores(request)  # Obtiene los torneos desde la API
+
+    if torneos is None:
+        return render(request, "cliente/error.html", {"mensaje": "Error al obtener torneos o usuario no autenticado"})
+
+    return render(request, "cliente/torneos_usuario_jugadores.html", {"torneos": torneos})
+
+
+
 
 
 

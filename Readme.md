@@ -54,3 +54,166 @@ Invoke-WebRequest -Uri "http://127.0.0.1:8000/oauth2/token/" `
                   -Method POST `
                   -Body "grant_type=password&username=admin&password=admin&client_id=pepeid&client_secret=pepesecreto" `
                   -ContentType "application/x-www-form-urlencoded"
+
+
+
+# 🎮 Aplicación de Gestión de Torneos  
+
+Bienvenido a la aplicación de gestión de torneos.  
+Esta aplicación permite a los usuarios registrarse, iniciar sesión y gestionar torneos, jugadores y participantes.  
+
+---
+
+## 🚀 Instalación y Configuración  
+
+### 1️⃣ Clonar el repositorio  
+
+Para obtener el código fuente del proyecto, ejecuta:  
+
+    git clone https://github.com/tu_usuario/tu_repositorio.git  
+    cd tu_repositorio  
+
+---
+
+### 2️⃣ Configurar variables de entorno  
+
+Crea un archivo **`.env`** en la raíz del proyecto y define las siguientes variables:  
+
+    API_VERSION=v1  
+    API_BASE_URL=https://mohbenbou.pythonanywhere.com/api/v1/  
+    API_BASE_TOKEN=https://mohbenbou.pythonanywhere.com/  
+
+Asegúrate de que el archivo `.env` está en el `.gitignore` para evitar que se suba al repositorio:  
+
+    echo ".env" >> .gitignore  
+
+---
+
+### 3️⃣ Crear y activar el entorno virtual  
+
+En **macOS y Linux**:  
+
+    python3 -m venv venv  
+    source venv/bin/activate  
+
+En **Windows**:  
+
+    python -m venv venv  
+    venv\Scripts\activate  
+
+---
+
+### 4️⃣ Instalar dependencias  
+
+Con el entorno virtual activado, instala las dependencias del proyecto:  
+
+    pip install -r requirements.txt  
+
+---
+
+### 5️⃣ Aplicar Migraciones  
+
+Ejecuta las migraciones para preparar la base de datos:  
+
+    python manage.py migrate  
+
+---
+
+### 6️⃣ Crear un superusuario (Opcional)  
+
+Si deseas acceder al panel de administración, crea un superusuario:  
+
+    python manage.py createsuperuser  
+
+Sigue las instrucciones en pantalla para configurar el usuario y la contraseña.  
+
+---
+
+### 7️⃣ Ejecutar el servidor  
+
+Para iniciar el servidor, usa el comando:  
+
+    python manage.py runserver  
+
+---
+
+## 🖥️ Capturas de Pantalla  
+
+### 🔹 Página principal (sin autenticación)  
+
+Si no nos hemos autenticado, solo podremos ver la web de la siguiente manera si nos ponemos a ver las listas:  
+
+![Vista sin autenticación](imagenes/1.png)  
+
+---
+
+### 🔹 Ir a la web de cliente con conexión a PythonAnywhere  
+
+![Web conectada a PythonAnywhere](imagenes/2.png)  
+
+---
+
+### 🔹 Registro e Inicio de Sesión  
+
+Para acceder a la aplicación, debemos **registrarnos** o **iniciar sesión**:  
+
+![Formulario de Registro](imagenes/3.png)  
+
+---
+
+### 🔹 Inicio de Sesión como Organizador  
+
+Cada rol tiene permisos distintos. Aquí vemos un **organizador autenticado**:  
+
+![Inicio de sesión como Organizador](imagenes/4.png)  
+
+---
+
+### 🔹 Creación de un Torneo  
+
+Un organizador puede **crear un torneo** fácilmente:  
+
+![Formulario de creación de torneo](imagenes/5.png)  
+
+Luego, podremos ver el torneo con el nombre del organizador que lo ha creado:  
+
+![Torneo creado con Organizador](imagenes/6.png)  
+
+---
+
+### 🔹 Edición de un Torneo  
+
+Podemos **editar un torneo**, por ejemplo, cambiando su nombre, hora o descripción:  
+
+![Formulario de edición de torneo](imagenes/7.png)  
+![Cambiando detalles del torneo](imagenes/11.png)  
+
+Al pulsar el botón de **guardar cambios**, el nombre del torneo se actualizará correctamente:  
+
+![Edición confirmada](imagenes/10.png)  
+
+---
+
+### 🔹 Eliminación de un Torneo  
+
+Si tenemos los permisos adecuados, también podemos **eliminar un torneo**:  
+
+![Botón para eliminar torneo](imagenes/12.png)  
+![Confirmación de eliminación](imagenes/13.png)  
+
+---
+
+## 🎯 Conclusión  
+
+Este proyecto permite una gestión completa de torneos, incluyendo:  
+
+✅ **Registro e inicio de sesión** con roles personalizados.  
+✅ **Creación, edición y eliminación de torneos** con permisos específicos.  
+✅ **Interfaz intuitiva y conexión con PythonAnywhere**.  
+
+---
+
+
+
+
+

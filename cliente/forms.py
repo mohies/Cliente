@@ -82,6 +82,9 @@ class RegistroOrganizadorForm(forms.ModelForm):
 
 
 
+from django import forms
+import datetime
+
 class TorneoForm(forms.Form):
     nombre = forms.CharField(
         label="Nombre del Torneo",
@@ -106,22 +109,17 @@ class TorneoForm(forms.Form):
     
     imagen = forms.FileField(
         label="Archivo del Torneo",
-        required=False,  # Si es obligatorio, ponlo como True
+        required=False,
         help_text="Sube un archivo (puede ser una imagen u otro tipo de archivo)"
     )
 
-    def __init__(self, *args, **kwargs):
-        super(TorneoForm, self).__init__(*args, **kwargs)
-        
-        helper = Helper()
-        
-        # Obtener las categorías disponibles desde la API
-        categoriasDisponibles = helper.obtener_categorias_select()
-        self.fields["categoria"] = forms.ChoiceField(  
-            choices=categoriasDisponibles,
-            required=True,
-            help_text="Selecciona una categoría"
-        )
+    categoria = forms.CharField(
+        label="Categoría",
+        required=True,
+        max_length=100,
+        help_text="Escribe la categoría del torneo"
+    )
+
         
 class TorneoActualizarNombreForm(forms.Form):
     nombre = forms.CharField(

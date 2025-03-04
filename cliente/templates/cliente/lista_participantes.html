@@ -28,24 +28,26 @@
                         <p>No está asociado a ningún equipo.</p>
                     {% endif %}
 
-                    <!--  BOTONES PARA EDITAR Y ELIMINAR -->
-                    <div class="mt-4 d-flex justify-content-end">
-                        <!-- Botón para Editar Equipos -->
-                        <a href="{% url 'participante_editar_equipos' participante.id %}" class="btn btn-warning me-2">
-                            Editar Equipos
-                        </a>
+                    <!--  BOTONES PARA EDITAR Y ELIMINAR (Solo si el usuario está autenticado) -->
+                    {% if request.session.is_authenticated %}
+                        <div class="mt-4 d-flex justify-content-end">
+                            <!-- Botón para Editar Equipos -->
+                            <a href="{% url 'participante_editar_equipos' participante.id %}" class="btn btn-warning me-2">
+                                Editar Equipos
+                            </a>
 
-                        <!-- Botón para Editar Participante Completo -->
-                        <a href="{% url 'editar_participante' participante.id %}" class="btn btn-primary me-2">
-                            Editar Participante
-                        </a>
+                            <!-- Botón para Editar Participante Completo -->
+                            <a href="{% url 'editar_participante' participante.id %}" class="btn btn-primary me-2">
+                                Editar Participante
+                            </a>
 
-                        <!-- Botón para Eliminar Participante -->
-                        <a href="{% url 'participante_eliminar' participante.id %}" class="btn btn-danger"
-                           onclick="return confirm('¿Estás seguro de que quieres eliminar este participante?');">
-                            Eliminar
-                        </a>
-                    </div>
+                            <!-- Botón para Eliminar Participante -->
+                            <a href="{% url 'participante_eliminar' participante.id %}" class="btn btn-danger"
+                               onclick="return confirm('¿Estás seguro de que quieres eliminar este participante?');">
+                                Eliminar
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         {% empty %}

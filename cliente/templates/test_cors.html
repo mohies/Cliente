@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test CORS Django</title>
+</head>
+<body>
+
+    <h1>Probando CORS en Django</h1>
+    <button onclick="obtenerTorneos()">Obtener Torneos</button>
+
+    <script>
+        function obtenerTorneos() {
+            const username = "admin";  // Usuario de Django
+            const password = "admin";  // Contraseña de Django
+    
+            // Convertimos "admin:admin" a Base64
+            const credentials = btoa(`${username}:${password}`);
+            
+            fetch("http://127.0.0.1:8000/api/v1/torneos/", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Basic ${credentials}`,  //  Enviamos Basic Auth
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(" Torneos obtenidos:", data);
+                alert("Mira la consola para ver los torneos!");
+            })
+            .catch(error => {
+                console.error("❌ Error en la petición:", error);
+                alert("Error al obtener los torneos. Revisa la consola.");
+            });
+        }
+    </script>
+    
+
+</body>
+</html>

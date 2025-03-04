@@ -48,6 +48,11 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     
+    path('torneos/mis-torneos/', views.torneos_usuario_view, name="torneos_usuario_view"),
+    path('mis-torneos-jugadores/', views.torneos_usuario_con_jugadores_view, name="torneos-usuario-jugadores"),
+
+    path("test-cors/", views.test_cors_view, name="test-cors"),
+    
 
 
 ]

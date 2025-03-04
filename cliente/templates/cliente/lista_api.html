@@ -12,6 +12,7 @@
                 </div>
                 <div class="card-body">
                     <p class="card-text"><strong>Descripción:</strong> {{ torneo.descripcion }}</p>
+                    
                     <h6 class="mt-3">Jugadores:</h6>
                     {% if torneo.jugadores %}
                         <ul class="list-group">
@@ -21,22 +22,25 @@
                                     <small>Email: {{ jugador.usuario.email }}</small><br>
                                     <small>Equipo: {% if jugador.equipo %}{{ jugador.equipo }}{% else %}No asignado{% endif %}</small><br>
 
-                                    <!-- Formulario para actualizar puntos -->
-                                    <form action="{% url 'editar_puntos_jugador' jugador.id %}" method="post" class="mt-2 d-flex align-items-center">
-                                        {% csrf_token %}
-                                        <label for="puntos_{{ jugador.id }}" class="me-2"><small>Puntos:</small></label>
-                                        <input type="number" name="puntos" id="puntos_{{ jugador.id }}" value="{{ jugador.puntos }}" class="form-control form-control-sm w-25 me-2">
-                                        <button type="submit" class="btn btn-success btn-sm">Actualizar</button>
-                                    </form>
+                                    <!-- Solo mostrar los formularios si el usuario está autenticado -->
+                                    {% if request.session.is_authenticated %}
+                                        <!-- Formulario para actualizar puntos -->
+                                        <form action="{% url 'editar_puntos_jugador' jugador.id %}" method="post" class="mt-2 d-flex align-items-center">
+                                            {% csrf_token %}
+                                            <label for="puntos_{{ jugador.id }}" class="me-2"><small>Puntos:</small></label>
+                                            <input type="number" name="puntos" id="puntos_{{ jugador.id }}" value="{{ jugador.puntos }}" class="form-control form-control-sm w-25 me-2">
+                                            <button type="submit" class="btn btn-success btn-sm">Actualizar</button>
+                                        </form>
 
-                                    <!-- Botones de acción -->
-                                    <div class="mt-2">
-                                        <a href="{% url 'editar_jugador' jugador.id %}" class="btn btn-warning btn-sm">Editar</a>
-                                        <a href="{% url 'jugador_eliminar_torneo' jugador.id torneo.id %}" class="btn btn-danger btn-sm"
-                                           onclick="return confirm('¿Estás seguro de que quieres eliminar este jugador del torneo?');">
-                                            Eliminar
-                                        </a>
-                                    </div>
+                                        <!-- Botones de acción -->
+                                        <div class="mt-2">
+                                            <a href="{% url 'editar_jugador' jugador.id %}" class="btn btn-warning btn-sm">Editar</a>
+                                            <a href="{% url 'jugador_eliminar_torneo' jugador.id torneo.id %}" class="btn btn-danger btn-sm"
+                                               onclick="return confirm('¿Estás seguro de que quieres eliminar este jugador del torneo?');">
+                                                Eliminar
+                                            </a>
+                                        </div>
+                                    {% endif %}
                                 </li>
                             {% endfor %}
                         </ul>
@@ -44,24 +48,26 @@
                         <p>No hay jugadores registrados.</p>
                     {% endif %}
 
-                    <!--  BOTONES PARA EDITAR Y ELIMINAR EL TORNEO -->
-                    <div class="mt-4 d-flex justify-content-end">
-                        <a href="{% url 'torneo_editar_nombre' torneo.id %}" class="btn btn-warning me-2">Editar Nombre</a>
-                        <a href="{% url 'editar_torneo' torneo.id %}" class="btn btn-primary me-2">Editar Torneo</a>
-                        <a href="{% url 'torneo_eliminar' torneo.id %}" class="btn btn-danger me-2"
-                           onclick="return confirm('¿Estás seguro de que quieres eliminar este torneo?');">
-                            Eliminar
-                        </a>
+                    <!--  BOTONES PARA EDITAR Y ELIMINAR EL TORNEO (Solo si el usuario está autenticado) -->
+                    {% if request.session.is_authenticated %}
+                        <div class="mt-4 d-flex justify-content-end">
+                            <a href="{% url 'torneo_editar_nombre' torneo.id %}" class="btn btn-warning me-2">Editar Nombre</a>
+                            <a href="{% url 'editar_torneo' torneo.id %}" class="btn btn-primary me-2">Editar Torneo</a>
+                            <a href="{% url 'torneo_eliminar' torneo.id %}" class="btn btn-danger me-2"
+                               onclick="return confirm('¿Estás seguro de que quieres eliminar este torneo?');">
+                                Eliminar
+                            </a>
 
-                        <!--  BOTONES PARA EDITAR Y ELIMINAR IMAGEN -->
-                        <a href="{% url 'torneo_actualizar_imagen' torneo.id %}" class="btn btn-info me-2">
-                            Editar Imagen
-                        </a>
-                        <a href="{% url 'torneo_eliminar_imagen' torneo.id %}" class="btn btn-outline-danger"
-                           onclick="return confirm('¿Estás seguro de que quieres eliminar la imagen del torneo?');">
-                            Eliminar Imagen
-                        </a>
-                    </div>
+                            <!--  BOTONES PARA EDITAR Y ELIMINAR IMAGEN -->
+                            <a href="{% url 'torneo_actualizar_imagen' torneo.id %}" class="btn btn-info me-2">
+                                Editar Imagen
+                            </a>
+                            <a href="{% url 'torneo_eliminar_imagen' torneo.id %}" class="btn btn-outline-danger"
+                               onclick="return confirm('¿Estás seguro de que quieres eliminar la imagen del torneo?');">
+                                Eliminar Imagen
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         {% endfor %}
