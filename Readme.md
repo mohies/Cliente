@@ -216,4 +216,13 @@ Este proyecto permite una gestión completa de torneos, incluyendo:
 
 
 
+## 🚀 Despliegue con Docker
 
+### 🐳 **Iniciar la API con Docker**
+Para construir y ejecutar la API, usa:
+
+```sh
+docker compose up --build
+
+### 🐳 **Detener la API con Docker**
+docker compose down
