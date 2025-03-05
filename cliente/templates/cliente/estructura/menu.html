@@ -32,7 +32,9 @@
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownTorneos">
                     <li><a class="dropdown-item" href="{% url 'listar_torneos' %}">Listar Torneos</a></li>
-                    <li><a class="dropdown-item" href="{% url 'crear_torneo' %}">Crear Torneo</a></li>
+                    {% if request.session.is_authenticated %}
+                        <li><a class="dropdown-item" href="{% url 'crear_torneo' %}">Crear Torneo</a></li>
+                    {% endif %}
                 </ul>
             </li>
 
@@ -43,7 +45,9 @@
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownJuegos">
                     <li><a class="dropdown-item" href="{% url 'juegos_lista' %}">Listar Juegos</a></li>
-                    <li><a class="dropdown-item" href="{% url 'crear_juego' %}">Crear Juego</a></li>
+                    {% if request.session.is_authenticated %}
+                        <li><a class="dropdown-item" href="{% url 'crear_juego' %}">Crear Juego</a></li>
+                    {% endif %}
                 </ul>
             </li>
 
@@ -54,7 +58,9 @@
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownParticipantes">
                     <li><a class="dropdown-item" href="{% url 'participantes_lista' %}">Listar Participantes</a></li>
-                    <li><a class="dropdown-item" href="{% url 'crear_participante' %}">Crear Participante</a></li>
+                    {% if request.session.is_authenticated %}
+                        <li><a class="dropdown-item" href="{% url 'crear_participante' %}">Crear Participante</a></li>
+                    {% endif %}
                 </ul>
             </li>
 
@@ -64,7 +70,9 @@
                     Jugadores
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownJugadores">
-                    <li><a class="dropdown-item" href="{% url 'crear_jugador' %}">Inscripción Jugador</a></li>
+                    {% if request.session.is_authenticated %}
+                        <li><a class="dropdown-item" href="{% url 'crear_jugador' %}">Inscripción Jugador</a></li>
+                    {% endif %}
                     <li><a class="dropdown-item" href="{% url 'listar_torneos' %}">Lista de Torneos</a></li>
                 </ul>
             </li>

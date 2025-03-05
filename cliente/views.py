@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 # Definimos por defecto la version que tenemos de la API y las establecemos en nuestras aplicaciones
 API_VERSION = env("API_VERSION", default="v1") 
-API_BASE_URL = f'http://127.0.0.1:8000/api/{API_VERSION}/'
+API_BASE_URL = f'https://mohbenbou.pythonanywhere.com/api/{API_VERSION}/'
 
 def index(request):
     return render(request, 'index.html')
@@ -716,6 +716,9 @@ def crear_jugador(request):
             # Extraer los torneos seleccionados
             datos["torneos"] = request.POST.getlist("torneos")
 
+            # Verificar los datos antes de enviar la solicitud
+            print(f"Datos enviados al backend: {datos}")  # Verificar si los datos son correctos
+
             # Enviar la petición al backend (no mandamos usuario porque ya lo gestionamos con el token)
             response = helper.realizar_peticion(
                 metodo='POST',
@@ -894,7 +897,7 @@ def login(request):
             password = formulario.data.get("password")
 
             # 1️ Solicitar el token de acceso
-            token_url = 'http://127.0.0.1:8000/oauth2/token/'
+            token_url = 'https://mohbenbou.pythonanywhere.com/oauth2/token/'
             datos = {
                 'grant_type': 'password',
                 'username': usuario,
@@ -911,7 +914,7 @@ def login(request):
 
                 # 3️ Obtener información del usuario autenticado
                 headers = {'Authorization': f'Bearer {token_acceso}'}
-                user_response = requests.get(f'http://127.0.0.1:8000/api/v1/usuario/token/{token_acceso}/', headers=headers)
+                user_response = requests.get(f'https://mohbenbou.pythonanywhere.com/api/v1/usuario/token/{token_acceso}/', headers=headers)
 
                 if user_response.status_code == 200:
                     usuario_data = user_response.json()

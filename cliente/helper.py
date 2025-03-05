@@ -115,8 +115,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 API_VERSION = env("API_VERSION", default="v1") 
-API_BASE_URL = f'http://127.0.0.1:8000/api/{API_VERSION}/'
-API_BASE_TOKEN = f'http://127.0.0.1:8000/'
+API_BASE_URL = f'https://mohbenbou.pythonanywhere.com/api/{API_VERSION}/'
+API_BASE_TOKEN = f'https://mohbenbou.pythonanywhere.com/'
 
 class Helper:
     
