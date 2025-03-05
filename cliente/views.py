@@ -136,7 +136,7 @@ def torneo_busqueda_simple(request):
 
 
 def torneo_busqueda_avanzada(request):
-    helper = Helper()  # 🔥 Instanciamos el Helper
+    helper = Helper()  
     formulario = BusquedaAvanzadaTorneoForm(request.GET or None)
     
     if formulario.is_valid():
@@ -145,7 +145,7 @@ def torneo_busqueda_avanzada(request):
         response = helper.realizar_peticion(
             metodo='GET',
             url=f'{API_BASE_URL}torneos/buscar/avanzado/',
-            params=params,  # ✅ ¡Aquí está el cambio!
+            params=params,  
             request=request
         )
 
