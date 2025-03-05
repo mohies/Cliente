@@ -857,7 +857,7 @@ def registrar_usuario(request):
 
         if formulario.is_valid():
             datos = formulario.cleaned_data.copy()
-            print("Datos enviados al servidor:", datos)  # 👈 Agrega esto para ver qué se está enviando
+            print("Datos enviados al servidor:", datos)  
             
             response = helper.realizar_peticion(
                 metodo='POST',
@@ -920,12 +920,12 @@ def login(request):
                     usuario_data = user_response.json()
                     print("Datos del usuario obtenidos:", usuario_data)  # Debug
 
-                    #  Guardar datos en la sesión de forma clara
+                    #  Guardar datos en la sesión 
                     request.session["is_authenticated"] = True
-                    request.session["user_id"] = usuario_data.get("id")  # ID del usuario
+                    request.session["user_id"] = usuario_data.get("id")  
                     request.session["username"] = usuario_data.get("username")  
                     request.session["email"] = usuario_data.get("email")
-                    request.session["user_rol"] = usuario_data.get("rol")  # Aseguramos que está
+                    request.session["user_rol"] = usuario_data.get("rol")  
 
                     messages.success(request, "Inicio de sesión exitoso.")
                     return redirect("index")
@@ -935,7 +935,7 @@ def login(request):
                 messages.error(request, "Usuario o contraseña incorrectos.")
 
         except Exception as e:
-            print(f'⚠️ Error en la petición: {e}')
+            print(f' Error en la petición: {e}')
             messages.error(request, "Error interno en el servidor. Inténtalo de nuevo.")
         
     else:
@@ -965,8 +965,8 @@ def torneos_usuario_view(request):
 
 def torneos_usuario_con_jugadores_view(request):
     """
-    🔹 Vista en el cliente que obtiene y muestra los torneos del usuario autenticado
-       junto con los jugadores en cada torneo.
+     Vista en el cliente que obtiene y muestra los torneos del usuario autenticado
+     junto con los jugadores en cada torneo.
     """
     helper = Helper()  # Instancia el Helper
     torneos = helper.obtener_torneos_usuario_con_jugadores(request)  # Obtiene los torneos desde la API

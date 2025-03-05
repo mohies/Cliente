@@ -33,7 +33,7 @@ def crear_cabecera(request=None):
     """
 
     if request and hasattr(request, 'session'):
-        token = request.session.get("token")  # 🔹 Intentamos obtener el token de la sesión
+        token = request.session.get("token")  #  Intentamos obtener el token de la sesión
 
         if token:
             return {
@@ -65,7 +65,7 @@ def crear_cabecera(request=None):
             'Content-Type': 'application/json'
         }
 
-    # ❌ Si no se pudo obtener un token, devolvemos una cabecera sin autenticación
+    #  Si no se pudo obtener un token, devolvemos una cabecera sin autenticación
     return {
         'Content-Type': 'application/json'
     }
@@ -254,7 +254,7 @@ class Helper:
     
     def obtener_torneos_usuario_con_jugadores(self, request):
         """
-        🔹 Obtiene los torneos en los que el usuario autenticado está inscrito,
+         Obtiene los torneos en los que el usuario autenticado está inscrito,
         junto con la lista de jugadores en cada torneo.
         """
         headers = crear_cabecera(request)  # Usa el token de la sesión
