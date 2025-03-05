@@ -907,7 +907,7 @@ def login(request):
             }
             response = requests.post(token_url, data=datos)
 
-            # 2️ Verificar si las credenciales son correctas
+            # 2️ Verificar si las credenciales son correctass
             if response.status_code == 200:
                 token_acceso = response.json().get('access_token')
                 request.session["token"] = token_acceso  # Guardamos el token en la sesión
