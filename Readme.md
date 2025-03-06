@@ -93,13 +93,13 @@ Asegúrate de que el archivo `.env` está en el `.gitignore` para evitar que se 
 
 En **macOS y Linux**:  
 
-    python3 -m venv venv  
+    python3 -m venv myvenv 
     source myvenv/bin/activate 
 
 En **Windows**:  
 
-    python -m venv venv  
-    venv\Scripts\activate  
+    python -m venv myvenv  
+    myvenv\Scripts\activate  
 
 ---
 
